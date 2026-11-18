@@ -6,13 +6,24 @@ build-backend = "hatchling.build"
 name = "pricing-engine"
 version = "0.1.0"
 description = "Auditable weekly pricing research data foundation"
-requires-python = ">=3.12,<3.14"
+requires-python = "==3.13.12"
 dependencies = [
     "pandas==3.0.3",
     "numpy==2.4.6",
     "scikit-learn==1.9.1",
     "joblib==1.5.3",
     "threadpoolctl==3.6.0",
+    "fastapi==0.163.2",
+    "uvicorn==0.54.0",
+    "azure-identity==1.27.0",
+    "azure-storage-blob==12.31.1",
+    "azure-data-tables==12.7.0",
+    "azure-mgmt-appcontainers==5.1.0",
+    "google-auth==2.62.2",
+    "requests==2.34.2",
+    "cachecontrol==0.15.0",
+    "cryptography==50.0.2",
+    "psutil==7.2.2",
 ]
 
 [project.scripts]
@@ -20,4 +31,9 @@ pricing-data = "pricing_engine.cli:main"
 pricing-model = "pricing_engine.model_cli:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/pricing_engine"]
+packages = ["src/pricing_engine", "src/pricing_web"]
+
+[dependency-groups]
+test = [
+    "httpx==0.28.1",
+]
