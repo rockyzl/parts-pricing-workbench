@@ -116,5 +116,15 @@ class RunnerGuards(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("do not use python -O", result.stderr)
 
+    def test_sample_http_unicode_preserves_canonical_artifact_identity(self):
+        from pricing_web.store import canonical as artifact_canonical
+        sample = {"label": "Contribution · source units", "rows": [{"amount": 1.25}]}
+        artifact = artifact_canonical(sample)
+        wire = runner.canonical(sample)
+        self.assertNotEqual(runner.sha(artifact), runner.sha(wire))
+        self.assertEqual(runner.sample_artifact_sha256(runner.json.loads(wire)), runner.sha(artifact))
+        tampered = {**sample, "rows": [{"amount": 1.26}]}
+        self.assertNotEqual(runner.sample_artifact_sha256(tampered), runner.sha(artifact))
+
 
 if __name__ == "__main__": unittest.main()

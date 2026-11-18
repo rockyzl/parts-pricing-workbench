@@ -10,6 +10,29 @@ import json
 from provision import check, load_config, write_private
 
 
+def owner_seed_blobs(config, credential):
+    """Operator-only transfer tuning; preserve AzureBlobStore's immutable writes.
+
+    The local connection timed out on the 30-MiB single archive PUT. Use the
+    documented block upload controls; production runtime clients are unchanged.
+    https://learn.microsoft.com/azure/storage/blobs/storage-blobs-tune-upload-download-python
+    """
+    from azure.storage.blob import BlobServiceClient
+    from pricing_web.artifacts import AzureBlobStore
+
+    class OwnerSeedBlobStore(AzureBlobStore):
+        def __init__(self):
+            service = BlobServiceClient(
+                account_url=f'https://{config["storage"]}.blob.core.windows.net/',
+                credential=credential, max_single_put_size=1024 * 1024,
+                max_block_size=1024 * 1024, connection_timeout=15, read_timeout=30,
+                retry_total=0, retry_connect=0, retry_read=0, retry_status=0)
+            self.container = service.get_container_client(config["inputs"])
+            self.read_containers = [self.container]
+
+    return OwnerSeedBlobStore()
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", type=Path, required=True)
@@ -34,12 +57,11 @@ def main():
         raise ValueError("A distinct analyst and reviewer are required")
     from azure.identity import AzureCliCredential
     from pricing_web.store import AzureStore
-    from pricing_web.artifacts import AzureBlobStore
     from pricing_web.reference import provision_membership, seed_reference
     from pricing_web.auth import identity_key
     credential = AzureCliCredential(subscription=c["subscription_id"])
     store = AzureStore(f'https://{c["storage"]}.table.core.windows.net/', credential)
-    blobs = AzureBlobStore(f'https://{c["storage"]}.blob.core.windows.net/', c["inputs"], credential)
+    blobs = owner_seed_blobs(c, credential)
     issuer = "https://securetoken.google.com/" + c["firebase_project"]
     results = []
     for member in members["users"]:

@@ -2,445 +2,141 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Parts Pricing Workbench · Lu Zhang</title>
-    <link rel="stylesheet" href="style.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#28493e" />
+    <meta name="description" content="Explore a complete pricing workflow: check sales data, compare models, plan catalog prices, review decisions and export a pricebook." />
+    <title>Pricing workbench · Lu Zhang</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --canvas: #f6f8f4;
+        --paper: #fff;
+        --ink: #23392f;
+        --muted: #5d6b62;
+        --forest: #28493e;
+        --citrus: #ad5425;
+        --line: #d7dfd4;
+        --display: "Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif;
+        --body: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        font: 16px/1.6 var(--body);
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; color: var(--ink); background: var(--canvas); }
+      a { color: var(--forest); text-underline-offset: .25em; }
+      a:focus-visible { outline: 3px solid var(--citrus); outline-offset: 5px; }
+      a:hover { text-decoration-thickness: 2px; }
+      h1, h2, p { margin: 0; }
+      .frame { width: min(1120px, calc(100% - 64px)); margin-inline: auto; }
+      .skip { position: absolute; top: -100px; left: 20px; padding: 12px 18px; background: var(--paper); z-index: 1; }
+      .skip:focus { top: 12px; }
+      header { border-bottom: 1px solid var(--line); }
+      .masthead { min-height: 84px; display: flex; justify-content: space-between; align-items: center; gap: 24px; }
+      .brand { font: 600 1.15rem var(--display); letter-spacing: -.02em; }
+      .brand span { color: var(--muted); font-weight: 400; }
+      nav { display: flex; align-items: center; gap: 28px; font-size: .85rem; }
+      nav a { padding-block: 10px; }
+      main { padding-block: 72px 48px; }
+      .hero { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(260px, 1fr); gap: 72px; align-items: center; }
+      .eyebrow { font-size: .72rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--citrus); }
+      h1 { font: 600 clamp(2.5rem, 4.4vw, 3.85rem)/1.08 var(--display); letter-spacing: -.045em; margin-block: 20px 24px; max-width: 680px; text-wrap: balance; }
+      .lead { color: var(--muted); font-size: 1.08rem; max-width: 540px; }
+      .open { display: inline-flex; align-items: center; justify-content: space-between; gap: 40px; min-height: 52px; padding: 12px 22px; margin-top: 30px; border: 1px solid var(--forest); border-radius: 5px; background: var(--forest); color: var(--paper); font-weight: 650; text-decoration: none; }
+      .open:hover { color: var(--forest); background: var(--paper); }
+      .entry-note { margin-top: 12px; color: var(--muted); font-size: .8rem; }
+      .workflow { background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 26px 28px 12px; }
+      .workflow h2 { font: 600 1.13rem var(--display); margin-bottom: 16px; }
+      .workflow ol { list-style: none; margin: 0; padding: 0; }
+      .workflow li { display: grid; grid-template-columns: 28px 1fr; column-gap: 14px; padding-bottom: 20px; position: relative; }
+      .workflow li:not(:last-child)::before { content: ""; position: absolute; left: 13px; top: 28px; bottom: 0; border-left: 1px solid var(--line); }
+      .number { display: grid; place-items: center; width: 28px; height: 28px; border: 1px solid var(--line); border-radius: 50%; font: .72rem/1 Consolas, monospace; color: var(--forest); }
+      .workflow strong { display: block; font-size: .91rem; line-height: 28px; }
+      .workflow p { font-size: .82rem; color: var(--muted); line-height: 1.5; }
+      .ways { margin-top: 64px; border-top: 1px solid var(--line); display: grid; grid-template-columns: 1fr 1fr; }
+      .way { padding-top: 28px; }
+      .way:first-child { padding-right: 48px; }
+      .way:last-child { padding-left: 48px; border-left: 1px solid var(--line); }
+      .way .eyebrow { color: var(--muted); }
+      .way h2 { font: 600 1.4rem/1.25 var(--display); margin-block: 10px 12px; letter-spacing: -.02em; }
+      .way p:not(.eyebrow) { color: var(--muted); font-size: .92rem; max-width: 460px; }
+      .way .hint { margin-top: 14px; font-size: .82rem; }
+      footer { padding-block: 24px 32px; border-top: 1px solid var(--line); }
+      .footer-row { display: flex; justify-content: space-between; gap: 20px; align-items: baseline; font-size: .8rem; color: var(--muted); }
+      .footer-row a { white-space: nowrap; }
+      @media (max-width: 800px) {
+        .frame { width: calc(100% - 40px); }
+        main { padding-top: 44px; }
+        .hero { gap: 32px; grid-template-columns: 1fr; }
+        h1 { max-width: 600px; }
+        .workflow { padding: 22px 24px 4px; }
+        .ways { margin-top: 40px; }
+        .way:first-child { padding-right: 24px; }
+        .way:last-child { padding-left: 24px; }
+      }
+      @media (max-width: 520px) {
+        .masthead { min-height: 72px; gap: 12px; }
+        .brand { font-size: 1rem; }
+        .brand span { display: block; margin-top: 3px; font-size: .76rem; }
+        nav { gap: 16px; font-size: .8rem; }
+        h1 { font-size: 2.5rem; }
+        .open { width: 100%; }
+        .ways { grid-template-columns: 1fr; }
+        .way:first-child { padding-right: 0; padding-bottom: 26px; }
+        .way:last-child { padding-left: 0; border-left: 0; border-top: 1px solid var(--line); }
+        .footer-row { flex-direction: column; gap: 12px; }
+      }
+    </style>
   </head>
   <body>
+    <a class="skip" href="#main">Skip to content</a>
     <header>
-      <a class="brand" href="#">LU ZHANG <span> / PRICING WORKBENCH</span></a>
-      <nav>
-        <a
-          href="https://github.com/rockyzl/parts-pricing-workbench"
-          target="_blank"
-          rel="noopener"
-          >GitHub ↗</a
-        ><button id="language" type="button">中文讲解</button>
-      </nav>
+      <div class="frame masthead">
+        <p class="brand">Pricing / workbench <span>by Lu Zhang</span></p>
+        <nav aria-label="Project links">
+          <a href="legacy.html">Original demo</a>
+          <a href="https://github.com/rockyzl/parts-pricing-workbench">GitHub <span aria-hidden="true">↗</span></a>
+        </nav>
+      </div>
     </header>
-    <main>
-      <div class="intro">
-        <p
-          class="eyebrow"
-          data-en="INDEPENDENT LEARNING PROTOTYPE"
-          data-zh="独立学习原型"
-        >
-          INDEPENDENT LEARNING PROTOTYPE
-        </p>
-        <h1
-          data-en="How do you arrive at one price?"
-          data-zh="一个价格，究竟是怎样算出来的？"
-        >
-          How do you arrive at one price?
-        </h1>
-        <p
-          data-en="Inspect a product. Set the limits. Compare prices and see what needs human judgment."
-          data-zh="先看商品，再设限制，最后比较价格。每一步都能看到依据。"
-        >
-          Inspect a product. Set the limits. Compare prices and see what needs
-          human judgment.
-        </p>
-      </div>
-      <div class="scope">
-        <strong
-          data-en="Real transactions. Explicit assumptions."
-          data-zh="交易记录是真实的；经营参数由你假设。"
-          >Real transactions. Explicit assumptions.</strong
-        ><span
-          data-en="Historical UK gift retail data illustrates the workflow. This is not vehicle-parts data. Cost and elasticity below are scenarios, not learned facts."
-          data-zh="用英国礼品零售的历史数据演示流程，并非汽车零件数据。下面的成本与价格敏感度是情景假设，没有训练弹性模型。"
-          >Historical UK gift retail data illustrates the workflow. This is not
-          vehicle-parts data. Cost and elasticity below are scenarios, not
-          learned facts.</span
-        >
-      </div>
-      <div id="loading" role="status">
-        Loading the public transaction snapshot…
-      </div>
-      <div class="workbench" id="workbench" hidden>
-        <section class="panel record">
-          <p
-            class="step"
-            data-en="1 / OBSERVED RECORD"
-            data-zh="1 / 先看真实记录"
-          >
-            1 / OBSERVED RECORD
-          </p>
-          <h2 data-en="Choose a product" data-zh="选择一个商品">
-            Choose a product
-          </h2>
-          <label for="product" data-en="Historical product" data-zh="历史商品"
-            >Historical product</label
-          ><select id="product"></select>
-          <h3 id="product-name"></h3>
-          <div class="badge" id="segment"></div>
-          <div class="facts">
-            <div>
-              <span data-en="Last transaction price" data-zh="最后一次成交单价"
-                >Last transaction price</span
-              ><strong id="base-price"></strong>
-            </div>
-            <div>
-              <span
-                data-en="Weeks with sales / last 8"
-                data-zh="最近 8 周中有销量的周数"
-                >Weeks with sales / last 8</span
-              ><strong id="active-weeks"></strong>
-            </div>
-          </div>
-          <p
-            class="chart-label"
-            data-en="Recorded units / 26 weeks"
-            data-zh="26 周每周记录的销量"
-          >
-            Recorded units / 26 weeks
-          </p>
-          <div id="history" class="history" role="img"></div>
-          <div class="chart-dates">
-            <span>2011-05-30</span><span>2011-11-21</span>
-          </div>
-          <p class="small" id="record-note"></p>
-          <details>
-            <summary
-              data-en="Where did this record come from?"
-              data-zh="这条数据来自哪里？"
-            >
-              Where did this record come from?
-            </summary>
-            <p
-              data-en="UCI Online Retail, 2010–2011. Positive UK merchandise sales through November 27, 2011; cancellation and non-product records excluded. No customer identifiers are included."
-              data-zh="UCI Online Retail，2010–2011 年英国零售交易。这里只展示截至 2011-11-27 的英国商品正向销售，排除了取消和非商品记录，不包含客户编号。"
-            >
-              UCI Online Retail, 2010–2011. Positive UK merchandise sales
-              through November 27, 2011; cancellation and non-product records
-              excluded. No customer identifiers are included.
-            </p>
-            <p
-              data-en="An empty week means no recorded sale. It does not tell us whether the item was in stock."
-              data-zh="空白的一周表示没有记录到销售，不能说明当时是否有库存。"
-            >
-              An empty week means no recorded sale. It does not tell us whether
-              the item was in stock.
-            </p>
-            <a
-              href="https://archive.ics.uci.edu/dataset/352/online+retail"
-              target="_blank"
-              rel="noopener"
-              data-en="Open the official dataset ↗"
-              data-zh="打开官方数据集 ↗"
-              >Open the official dataset ↗</a
-            >
-          </details>
-        </section>
-        <section class="panel inputs">
-          <p
-            class="step"
-            data-en="2 / BUSINESS ASSUMPTIONS"
-            data-zh="2 / 设置经营条件"
-          >
-            2 / BUSINESS ASSUMPTIONS
-          </p>
-          <h2 data-en="Set your boundaries" data-zh="划定允许的价格范围">
-            Set your boundaries
-          </h2>
-          <p
-            class="small"
-            data-en="Editable scenario inputs. These fields are not supplied by the dataset."
-            data-zh="这些是可修改的情景输入，原始数据没有提供。"
-          >
-            Editable scenario inputs. These fields are not supplied by the
-            dataset.
-          </p>
-          <form id="pricing-form">
-            <label
-              for="cost"
-              data-en="Assumed unit cost · £"
-              data-zh="假设单位成本 · 英镑"
-              >Assumed unit cost · £</label
-            ><input id="cost" type="number" min="0" step="0.01" required />
-            <p
-              class="hint"
-              data-en="Starts at 60% of the last price, as an illustration."
-              data-zh="初始按最后成交价的 60% 设置，仅用于演示。"
-            >
-              Starts at 60% of the last price, as an illustration.
-            </p>
-            <div class="two-fields">
-              <div>
-                <label
-                  for="margin"
-                  data-en="Minimum gross margin %"
-                  data-zh="最低毛利率 %"
-                  >Minimum gross margin %</label
-                ><input
-                  id="margin"
-                  type="number"
-                  min="0"
-                  max="95"
-                  step="1"
-                  value="20"
-                  required
-                />
-              </div>
-              <div>
-                <label
-                  for="change"
-                  data-en="Maximum price change ±%"
-                  data-zh="最多涨跌 ±%"
-                  >Maximum price change ±%</label
-                ><input
-                  id="change"
-                  type="number"
-                  min="0"
-                  max="50"
-                  step="1"
-                  value="12"
-                  required
-                />
-              </div>
-            </div>
-            <label class="check"
-              ><input id="use-market" type="checkbox" /><span
-                data-en="Apply a comparable-market price ceiling"
-                data-zh="加一条：可比市场价格上限"
-                >Apply a comparable-market price ceiling</span
-              ></label
-            >
-            <div id="market-field" hidden>
-              <label
-                for="market"
-                data-en="Assumed price ceiling · £"
-                data-zh="假设价格上限 · 英镑"
-                >Assumed price ceiling · £</label
-              ><input id="market" type="number" min="0.01" step="0.01" />
-              <p
-                class="hint"
-                data-en="An optional hard rule for this exercise, not a scraped competitor quote."
-                data-zh="本练习把它作为硬限制；它不是网上抓取的真实竞品报价。"
-              >
-                An optional hard rule for this exercise, not a scraped
-                competitor quote.
-              </p>
-            </div>
-            <details class="assumptions">
-              <summary
-                data-en="How does a sparse item borrow information?"
-                data-zh="低销量商品怎样借用同类信息？"
-              >
-                How does a sparse item borrow information?
-              </summary>
-              <p
-                data-en="Teaching example: combine a hypothetical item signal with a family assumption. Fewer selling weeks means greater weight on the family. No category model has been fitted."
-                data-zh="教学示例：把假设的单品信号和同类商品经验合起来。有销量的周数越少，就越依赖同类经验。这里没有训练类别模型。"
-              >
-                Teaching example: combine a hypothetical item signal with a
-                family assumption. Fewer selling weeks means greater weight on
-                the family. No category model has been fitted.
-              </p>
-              <label
-                for="family-e"
-                data-en="Family elasticity assumption"
-                data-zh="假设同类商品的价格弹性"
-                >Family elasticity assumption</label
-              ><input
-                id="family-e"
-                type="number"
-                max="-0.1"
-                min="-10"
-                step="0.1"
-                value="-1.5"
-                required
-              /><label
-                for="sku-e"
-                data-en="Hypothetical item elasticity signal"
-                data-zh="假设这个商品自身的弹性信号"
-                >Hypothetical item elasticity signal</label
-              ><input
-                id="sku-e"
-                type="number"
-                max="-0.1"
-                min="-10"
-                step="0.1"
-                value="-2.2"
-                required
-              />
-              <p
-                class="hint"
-                data-en="−1.5 means roughly 1.5% fewer units for a small 1% price increase, under the assumed demand curve."
-                data-zh="−1.5 的意思是：按假设的需求曲线，价格小幅涨 1%，销量约降 1.5%。"
-              >
-                −1.5 means roughly 1.5% fewer units for a small 1% price
-                increase, under the assumed demand curve.
-              </p>
-              <p class="small" id="pool-note"></p>
-            </details>
-            <button
-              class="primary"
-              type="submit"
-              id="calculate"
-              data-en="Compare candidate prices →"
-              data-zh="比较候选价格 →"
-            >
-              Compare candidate prices →</button
-            ><button
-              class="text-button"
-              id="try-conflict"
-              type="button"
-              data-en="Try a cost / price-limit conflict"
-              data-zh="试一下：成本和售价上限冲突"
-            >
-              Try a cost / price-limit conflict
-            </button>
-          </form>
-        </section>
-        <section class="panel result">
-          <p
-            class="step"
-            data-en="3 / PRICE DECISION"
-            data-zh="3 / 得到决策结果"
-          >
-            3 / PRICE DECISION
-          </p>
-          <h2 data-en="See the trade-off" data-zh="看看最后怎么权衡">
-            See the trade-off
-          </h2>
-          <div id="decision" aria-live="polite">
-            <p
-              class="empty"
-              data-en="Set the inputs, then compare prices. Nothing is published to a store."
-              data-zh="设置条件，再点击比较价格。这里不会向任何商店发布价格。"
-            >
-              Set the inputs, then compare prices. Nothing is published to a
-              store.
-            </p>
-          </div>
-          <div id="review" hidden>
-            <label
-              for="review-note"
-              data-en="Your review note"
-              data-zh="你的审核意见"
-              >Your review note</label
-            ><textarea id="review-note" rows="2" placeholder=""></textarea
-            ><button
-              id="save-review"
-              class="secondary"
-              type="button"
-              data-en="Save a local review"
-              data-zh="保存本地审核记录"
-            >
-              Save a local review</button
-            ><button
-              id="download"
-              class="text-button"
-              type="button"
-              data-en="Download calculation record"
-              data-zh="下载本次计算记录"
-            >
-              Download calculation record
-            </button>
-            <p
-              class="hint"
-              data-en="Stored only in this browser. This is a review simulation, not an authenticated approval system."
-              data-zh="只保存在当前浏览器。这里模拟审核过程，没有接入企业身份与正式审批系统。"
-            >
-              Stored only in this browser. This is a review simulation, not an
-              authenticated approval system.
-            </p>
-            <p id="review-status" role="status"></p>
-          </div>
-        </section>
-      </div>
-      <section class="explain">
-        <h2
-          data-en="What this engine does — in plain language"
-          data-zh="用大白话说，这个引擎做了什么"
-        >
-          What this engine does — in plain language
-        </h2>
-        <div class="explain-grid">
-          <article>
-            <h3
-              data-en="First: rule out impossible prices"
-              data-zh="先排除不能接受的价格"
-            >
-              First: rule out impossible prices
-            </h3>
-            <p
-              data-en="Cost and minimum margin set a lower limit. Change limits and an optional market ceiling set the rest of the range. Conflicting rules produce a review request, never a hidden override."
-              data-zh="成本和最低毛利率划出底线；涨跌幅和市场上限划出另一边。规则冲突时直接提示，不能偷偷越过规则报个价。"
-            >
-              Cost and minimum margin set a lower limit. Change limits and an
-              optional market ceiling set the rest of the range. Conflicting
-              rules produce a review request, never a hidden override.
-            </p>
-          </article>
-          <article>
-            <h3
-              data-en="Then: compare what could happen"
-              data-zh="再比较：不同价格可能怎样"
-            >
-              Then: compare what could happen
-            </h3>
-            <p
-              data-en="For each candidate price, calculate sales and contribution profit under three assumed sensitivities. Select the candidate with the highest worst-case profit across those three scenarios. This is not a statistical confidence interval."
-              data-zh="每个候选价都按三种价格敏感度假设计算销量与毛利。选出“三种假设中最差毛利”最高的候选价。这是情景比较，不是统计置信区间。"
-            >
-              For each candidate price, calculate sales and contribution profit
-              under three assumed sensitivities. Select the candidate with the
-              highest worst-case profit across those three scenarios. This is
-              not a statistical confidence interval.
-            </p>
-          </article>
-          <article>
-            <h3
-              data-en="Finally: review and test"
-              data-zh="最后：审核，并通过实验验证"
-            >
-              Finally: review and test
-            </h3>
-            <p
-              data-en="A calculated proposal is not proven business value. A real rollout needs verified costs, estimated price response, customer and dealer constraints, and a controlled test. This version uses explicit scenarios and no LLM."
-              data-zh="算出来的候选价还不是已验证的收益。真实上线还需要核实成本、估计价格响应、补齐客户与经销商约束，再做对照实验。本版按明确情景计算，没有调用大语言模型。"
-            >
-              A calculated proposal is not proven business value. A real rollout
-              needs verified costs, estimated price response, customer and
-              dealer constraints, and a controlled test. This version uses
-              explicit scenarios and no LLM.
-            </p>
-          </article>
+    <main class="frame" id="main">
+      <section class="hero" aria-labelledby="title">
+        <div>
+          <p class="eyebrow">Version 2 · The complete workflow</p>
+          <h1 id="title">From sales history to a reviewed price plan.</h1>
+          <p class="lead">See how data, model evidence and business rules come together. Follow every catalog entry through a pricing decision, human review and a saved pricebook.</p>
+          <a class="open" href="https://pricing-workbench-api.ambitiousground-6adc4ebe.centralus.azurecontainerapps.io/workbench/">Open workbench <span aria-hidden="true">↗</span></a>
+          <p class="entry-note">Opens with a saved example. No sign-in needed to explore.</p>
         </div>
+        <aside class="workflow" aria-labelledby="workflow-title">
+          <h2 id="workflow-title">One plan, five steps</h2>
+          <ol aria-label="Data → Model → Pricing → Review → Export">
+            <li><span class="number" aria-hidden="true">01</span><div><strong>Data</strong><p>Check weekly sales and what is missing.</p></div></li>
+            <li><span class="number" aria-hidden="true">02</span><div><strong>Model</strong><p>Compare predictions with a simple baseline.</p></div></li>
+            <li><span class="number" aria-hidden="true">03</span><div><strong>Pricing</strong><p>Set rules. Compare changes and holds.</p></div></li>
+            <li><span class="number" aria-hidden="true">04</span><div><strong>Review</strong><p>A second person checks the decisions.</p></div></li>
+            <li><span class="number" aria-hidden="true">05</span><div><strong>Export</strong><p>Save the reviewed plan and download CSVs.</p></div></li>
+          </ol>
+        </aside>
       </section>
-      <details class="references">
-        <summary
-          data-en="Open-source references and next steps"
-          data-zh="开源参考与后续扩展"
-        >
-          Open-source references and next steps
-        </summary>
-        <p>
-          <a
-            href="https://github.com/Azure/cortana-intelligence-price-analytics"
-            >Microsoft Interactive Price Analytics</a
-          >
-          ·
-          <a href="https://github.com/Nixtla/statsforecast">StatsForecast</a> ·
-          <a href="https://github.com/google/or-tools">OR-Tools</a> ·
-          <a href="https://github.com/artefactory/choice-learn">Choice-Learn</a>
-        </p>
-        <p
-          data-en="These are researched references, not installed integrations. Next: governed time-based model evaluation, better sparse-data estimates, then product-substitution and portfolio constraints."
-          data-zh="以上是调研参考，不代表本版已经集成这些工具。后续依次加入按时间切分的模型评估、更可靠的稀疏数据估计，以及商品替代和组合约束。"
-        >
-          These are researched references, not installed integrations. Next:
-          governed time-based model evaluation, better sparse-data estimates,
-          then product-substitution and portfolio constraints.
-        </p>
-      </details>
-      <footer>
-        Lu Zhang · Independent prototype · UCI Online Retail / Chen (2015), CC
-        BY 4.0 · <a href="https://doi.org/10.24432/C5BW33">Dataset citation</a>
-      </footer>
+      <section class="ways" aria-label="Choose how to explore">
+        <article class="way">
+          <p class="eyebrow">Public · Read only</p>
+          <h2>Explore the saved example</h2>
+          <p>Start with 249 store–brand entries from a public retail dataset. Inspect the sales history, model results and four-week pricing plan, including the reasons for keeping a price unchanged.</p>
+          <p class="hint">You are viewing saved results; opening the example does not start model training.</p>
+        </article>
+        <article class="way">
+          <p class="eyebrow">Private · Invited accounts</p>
+          <h2>Work through your own plan</h2>
+          <p>Sign in inside the workbench to upload weekly data, run the available model pipeline and create a plan. A separate reviewer checks it before publication to your private ledger.</p>
+          <p class="hint">Available actions depend on your workspace permissions. Saved plans and exports stay private.</p>
+        </article>
+      </section>
     </main>
-    <script type="module" src="app.mjs"></script>
+    <footer>
+      <div class="frame footer-row">
+        <p>Independent learning project · Data sources and scenario assumptions are explained in the workbench.</p>
+        <a href="legacy.html">View the original single-product demo <span aria-hidden="true">→</span></a>
+      </div>
+    </footer>
   </body>
 </html>

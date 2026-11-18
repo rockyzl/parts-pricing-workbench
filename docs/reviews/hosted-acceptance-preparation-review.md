@@ -40,3 +40,9 @@ Independently ran `tests/hosted/test_runner_guards.py`: **8 tests passed**, incl
 | `tests/hosted/test_runner_guards.py` | `5f97363bdf651972fec5fc97080ec37173217a026271d058c153735b30c305fd` |
 
 Final preparation decision: **the corrected runner is ready for actual scoped preparation and a later independent execution review; no execute approval is granted by this report**. The operator files remain excluded from the reviewed application image. The pending provider-default replacement build must supply its actual new digest; the superseded image must not be substituted into that review.
+
+## Actual HTTP representation amendment — 2026-11-18
+
+The first hosted preparation stopped before upload or training because the public sample manifest identifies stored canonical JSON, while HTTP returns semantically equivalent UTF-8 JSON. The corrected runner hashes decoded JSON with the actual producer's `pricing_web.store.canonical` function and records the distinct HTTP-wire hash separately. It does not replace integrity verification with a field-count check or accept changed sample content. Failure receipts additionally retain sanitized traceback basenames, line numbers and function names without local variable values. The failed preparation directory remains preserved; a fresh second preparation completed through real provider login, browser upload and server snapshot readback.
+
+Independently reviewed the narrow correction and reran **9 offline guard tests**, including Unicode representation equivalence and content-tampering rejection; all passed. Current runner SHA-256 is `8537a23f0a533b20a82d9e19280d435cf8934486266966bec1fce0977724f923`; guard-test SHA-256 is `128bcdb40829f5c14f0abd4476d98bab1cb101e2d184e1f57e8ab2f531ed78ac`; README hash is unchanged. The exact private second preparation/request is evaluated separately in [the first hosted execution review](hosted-first-run-execute-review.md). This preparation report itself remains non-executing.

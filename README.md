@@ -1,69 +1,77 @@
 # Parts Pricing Workbench
 
-[Open the demo](https://rockyzl.github.io/parts-pricing-workbench/) · [中文讲解](docs/learn.zh.md)
+[Open the V2 workbench](https://pricing-workbench-api.ambitiousground-6adc4ebe.centralus.azurecontainerapps.io/workbench/) · [Architecture and API](docs/pricing-phase4-api-handoff.md) · [Weekly CSV format](docs/data-contracts/weekly-pricing-v1.md)
 
-An independent learning prototype that makes a price decision inspectable: view a historical product, enter business assumptions, compare feasible prices, and save a local review note.
+An independent pricing prototype that follows a complete decision workflow: inspect weekly sales, freeze a data cutoff, evaluate a demand model, compare pricing strategies across the catalog, obtain a second person's review, and export an approved demo pricebook.
 
-The public demo uses genuine **UCI Online Retail** gift-retail transactions. It is a public proxy for learning the workflow, **not automotive-parts data**. Costs, market ceilings and elasticity inputs are explicit scenario assumptions. This first version does not train an elasticity model or call an LLM.
+**Verified live, November 18, 2026:** public browsing, real sign-in, private upload, one actual bounded training run, catalog comparison, independent review and CSV export all passed cloud checks. Both the 249-series reference pricebook and the two-product practice pricebook survived an actual API restart and were reopened with both authorized accounts. See the [deployment record](docs/pricing-phase5-deployment-2026-11-18.md) for evidence and limits.
 
-## Try it
+## Start with the public example
 
-1. Select a product and inspect its recorded weekly sales.
-2. Enter an assumed unit cost, minimum gross-margin rate and permitted price change.
-3. Compare candidate prices. Expand the sparse-item explanation to adjust a hypothetical item/family sensitivity combination.
-4. Try a cost/ceiling conflict, or select a product with no recent sales. The engine returns an explanation instead of inventing a price or a unit of demand.
-5. Save a local review note or download the calculation record. No real prices are published.
+No account is needed to inspect the saved **249-series OJ reference**. Follow the stages across the page:
 
-The page defaults to English and has a Chinese learning toggle. There is no login, paid server or model API.
+1. **Data:** inspect the catalog, sales concentration, observed price changes and gaps in recorded history.
+2. **Model:** compare the saved Poisson model with simple forecasting baselines and inspect its held-out historical results.
+3. **Pricing:** inspect how assumed costs, minimum margin and a permitted price-change range constrain each decision. The teaching scenario proposes 20 changes and holds the other 229 series.
+4. **Review:** open individual rows to see the selected price, unchanged-price alternative, reasons and evidence.
 
-## Calculation
+This public example is a curated saved result, not a new training run. The underlying historical OJ data are real; the example's costs and business constraints are explicitly assumed. OJ prices and sales retain their source-scale labels because a defensible currency/package conversion is unavailable.
 
-For each allowed price `p` and assumed elasticity `e`:
+## Private workflow
 
-```text
-scenario units = recent eight-week mean recorded units × (p / reference price)^e
-scenario gross profit = (p − assumed unit cost) × scenario units
-price floor = max(cost / (1 − minimum margin), reference price × (1 − change limit))
-price ceiling = min(reference price × (1 + change limit), optional market ceiling)
+Private analyst and reviewer accounts are provisioned by the owner. A successful Firebase login alone does not grant workspace access. Credentials are never published in this repository.
+
+The implemented workflow supports uploading a validated weekly CSV, creating an immutable cutoff snapshot, requesting a bounded training job, selecting a compatible saved model, comparing the full catalog, and saving a proposal. A different authorized reviewer must resolve the complete proposal before it can be published to the **demo ledger** and downloaded as CSV. A published demo pricebook does not update an ERP or send real prices to customers.
+
+Use the analyst account to prepare and **Send for review**, then sign out and use the reviewer account to **Approve selected** and **Publish to Demo ledger**. Both roles can reopen the saved results. The owner keeps account details in a private local file; there is no public password or browser role-switching bypass.
+
+For a small practice input, download the clearly labeled [synthetic 100-week CSV](workbench/downloads/synthetic-weekly-teaching.csv) and its [source description](workbench/downloads/synthetic-weekly-teaching.json). It contains two invented products and synthetic USD values. Use cutoff **100**. This fixture tests the workflow; it is not real commercial data or evidence of model quality.
+
+## How the engine works
+
+```mermaid
+flowchart LR
+    A[Weekly sales and price records] --> B[Validated snapshot at a fixed cutoff]
+    B --> C[Time-ordered model evaluation]
+    C --> D[Catalog pricing comparison]
+    E[Explicit costs, margin and change limits] --> D
+    D --> F[Analyst proposal]
+    F --> G[Independent staff review]
+    G --> H[Demo pricebook and CSV]
 ```
 
-Limits are rounded inward to pence. If the interval is empty, no price is proposed. Zero recent recorded sales returns a data-review state. Otherwise, the engine tests a grid of at most 1,003 cent-valued candidates and chooses the highest minimum profit across three sensitivity scenarios. Ties prefer the price nearest the reference. This is the best of the enumerated candidates, not a claim of continuous or real-world optimality.
+The model uses historical price, advertising and time features. Its shared brand-level response lets sparse store/product series borrow information from more frequently observed series. This is useful for exploring the long-tail problem, but does not establish the causal effect of changing a price. Forecasting performance, price-response identification and realized profit are separate questions.
 
-The three elasticities are a central teaching assumption plus/minus 0.6 (upper value capped at −0.05). The central assumption mixes hypothetical item and family values using `activeWeeks / (activeWeeks + 8)`. This is an explicit teaching policy, **not empirical-Bayes estimation, an estimated posterior, causal inference or a confidence interval**.
+The pricing engine compares feasible candidates with an unchanged-price alternative. It enforces margin and price-change limits, retains holds and excluded cases, and records why a proposal was selected. Missing information is kept visible. Calendar seasonality requires a defensible calendar mapping; future promotions and inventory must be provided or explicitly assumed. This version does not optimize substitution between products or promise that every relevant commercial factor is available.
 
-## Real data / assumptions / missing information
+The frozen reference model's historical confirmation MAE was **7,698.47**, versus **11,921.55** for the recent-mean baseline, conditional on realized prices and advertising. Those numbers are source-scale forecast errors, not dollars or measured profit uplift. [Reference evaluation and limitations](docs/pricing-phase2-handoff.md).
 
-| Layer | What it contains |
-|---|---|
-| Observed | Real historical product descriptions, prices, quantities and transaction dates, aggregated without customer identifiers |
-| Descriptive | Recent eight-week mean recorded sales; days/weeks without a recorded sale do not establish in-stock exposure |
-| Assumed | Unit cost, margin requirement, maximum price change, optional comparable-market ceiling, price sensitivity and information-sharing policy |
-| Calculated | Feasible price range, scenario quantities/profit, selected grid candidate and review record |
-| Not implemented | Fitted elasticity, causal identification, forecast validation, substitution model, portfolio optimizer, LLM, Palantir integration, authenticated approvals or live experimentation |
+## Technology and boundaries
 
-Changes in observed transaction prices can reflect customer mix, quantity discounts or promotions. No actual profit improvement is claimed. No four-hundred-thousand-product scaling benchmark is claimed.
+- **Python / scikit-learn:** validated data processing, time-ordered forecasting evaluation and bounded pricing calculations.
+- **FastAPI and browser JavaScript:** the same-origin workbench and private HTTP API.
+- **Firebase Authentication:** identity; server-owned workspace membership determines permissions.
+- **Azure Container Apps:** API with min 0/max 1 replica, and a separate manual training job.
+- **Azure Blob Storage and Tables:** private inputs/results, versioned plans, review history and the demo ledger; separate API and worker managed identities.
 
-## Run locally
+No LLM API is called by the pricing workflow. This is not a Palantir integration, a copy of International's internal engine, or a production automotive-parts system. The OJ reference is a retail research proxy. No 400,000-SKU capacity or causal business-impact claim is made.
+
+## Run checks locally
+
+Use CPython **3.13.12** and the committed dependency lock:
 
 ```bash
-node --test tests/engine.test.mjs
-python3 -m http.server 8791 --directory web
+uv sync --locked --group test
+uv run --locked --group test python -m unittest discover -s tests/web_backend
+uv run --locked --group test python -m unittest discover -s tests/training
 ```
 
-Open http://localhost:8791. The browser executes `web/engine.mjs` on every calculation; results are not prerecorded.
-
-V2 development has completed the Python weekly-data foundation, independently reviewed local OJ model training, and the reviewed portable reference bundle and bounded pricing engine. The frozen Poisson model's confirmation MAE is 7,698.47 (recent-mean baseline: 11,921.55), conditional on realized prices and advertising; this is not causal price-response or profit evidence. See the [Phase 3 acceptance and handoff](docs/pricing-phase3-handoff.md), [Phase 2 results](docs/pricing-phase2-handoff.md), [model runbook](docs/model-runbook-v2.md), and [validated upload contract](docs/data-contracts/weekly-pricing-v1.md). The public page remains V1. Hosted uploads/retraining, authentication, shared review and the V2 UI remain to be implemented; local raw data and model artifacts are excluded from Git.
-
-To regenerate the data, install `requirements-data.txt`, download the official [UCI ZIP](https://archive.ics.uci.edu/static/public/352/online+retail.zip) as `data/raw/online-retail.zip`, and run:
+These suites use synthetic inputs and mocked fitting/provider operations. They do not launch a real cloud training job. The production service entrypoint is:
 
 ```bash
-python3 scripts/prepare_data.py
+uv run --locked uvicorn pricing_web.api:production_app --factory --host 0.0.0.0 --port 8000 --workers 1
 ```
 
-The downloader receipt and expected SHA-256 are in `docs/data-source.json`. Raw transactions are excluded from Git. Data processing is descriptive; no model fitting occurs.
+It requires the explicit private Firebase/Azure configuration and managed identity described in the [API handoff](docs/pricing-phase4-api-handoff.md). It has no automatic developer credential or local-storage fallback. See [deployment instructions](deploy/README.md) and [the bounded training design](docs/pricing-phase4-training-handoff.md).
 
-## Verification and next steps
-
-Tests cover conflicting limits, inward rounding, zero sales, malformed inputs, unchanged prices, the teaching weight, and independent exhaustive-grid arithmetic. Browser verification checks all public cases, state invalidation, language switching, review/export and mobile layout.
-
-Phase 3 passed 22 bundle tests, 32 pricing tests and independent full-catalog arithmetic checks over 249 series and 5,566 candidates. The next phase implements the authenticated public application and persistent review workflow described in the [Phase 4 design handoff](docs/pricing-phase4-implementation-handoff.md). Forecast accuracy and causal commercial impact remain separate. See the [Phase 3 verification](docs/reviews/phase3-verification.md) and [source attribution](THIRD_PARTY.md).
+The earlier UCI gift-retail browser-only experiment is retained under `web/`; its [Chinese walkthrough](docs/learn.zh.md) describes that earlier version. It is separate from the V2 OJ model and private workflow. Raw datasets, fitted artifacts and account secrets are excluded from Git and the code-only container image. See [source attribution](THIRD_PARTY.md).

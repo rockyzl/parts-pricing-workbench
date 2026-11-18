@@ -17,6 +17,7 @@ import os
 from pathlib import Path
 import re
 import time
+import traceback
 from urllib.parse import urlparse
 import uuid
 
@@ -59,6 +60,14 @@ def save(path, value):
 
 
 def load(path): return json.loads(private_path(path).read_bytes())
+
+
+def sample_artifact_sha256(value):
+    # The manifest binds private-store canonical bytes (ASCII Unicode escapes),
+    # while FastAPI returns equivalent decoded JSON using UTF-8 on the wire.
+    # Use the actual producer identity function, not the HTTP representation.
+    from pricing_web.store import canonical as artifact_canonical
+    return sha(artifact_canonical(value))
 
 
 class Hosted:
@@ -160,8 +169,9 @@ def prepare(h):
     assert h.request("GET", "/api/v1/workspaces/not-an-invited-workspace/snapshots", role="analyst", statuses=(404,))["status"] == 404
     index = h.request("GET", "/api/v1/samples")["items"][0]
     sample_raw = h.request("GET", "/api/v1/samples/" + index["id"], raw=True)
-    assert sha(sample_raw) == index["sha256"]
     sample = json.loads(sample_raw)
+    if sample_artifact_sha256(sample) != index["sha256"]:
+        raise ValueError("Decoded public sample differs from the manifest's canonical artifact")
     assert len(sample["rows"]) == 249 and sample["read_only"] and sample["snapshot"]["value_space"]["currency"] is None
     responses = []
     with sync_playwright() as p:
@@ -199,6 +209,7 @@ def prepare(h):
         "workspace": h.workspace, "snapshot_id": snapshot_id, "snapshot": snapshot,
         "evidence_directory": str(private_path(h.out, exists=False)), "actor_binding": actors,
         "fixture_sha256": FIXTURE_SHA, "identities": identities, "public_sample_manifest": index,
+        "public_sample_transport_sha256": sha(sample_raw),
         "mode": "Actual Chromium, Firebase, deployed API and Azure persistence; no training requested"})
 
 
@@ -508,7 +519,9 @@ def main():
         for secret in [*h.tokens.values(), *(u["password"] for u in h.users.values())]:
             message = message.replace(secret, "[redacted]")
         save(h.out / ("failure-" + args.stage + "-" + str(time.time_ns()) + ".json"),
-            {"at": utc(), "stage": args.stage, "error_type": type(error).__name__, "message": message, "automatic_retry": False})
+            {"at": utc(), "stage": args.stage, "error_type": type(error).__name__, "message": message,
+             "frames": [{"file": Path(frame.filename).name, "line": frame.lineno, "function": frame.name}
+                        for frame in traceback.extract_tb(error.__traceback__)], "automatic_retry": False})
         raise SystemExit("Hosted acceptance failed; sanitized private failure receipt retained") from None
     print(json.dumps({"stage": args.stage, "result": "passed", "real_hosted": True}), flush=True)
 
