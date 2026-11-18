@@ -1,0 +1,102 @@
+{
+  "schema": "pricing-model-protocol-v1",
+  "seed": 20261118,
+  "source_sha256": "3fc53cf6b14df1d69aba1977a27953400e53df5483c23493a38d6031b27b2c54",
+  "selection_origins": [
+    140,
+    144,
+    148
+  ],
+  "confirmation_origins": [
+    152,
+    156
+  ],
+  "horizon": 4,
+  "training_origin_start": 44,
+  "training_origin_step": 4,
+  "candidates": [
+    {
+      "id": "poisson-a01",
+      "family": "poisson",
+      "alpha": 0.1,
+      "max_iter": 500,
+      "tol": 0.0001
+    },
+    {
+      "id": "poisson-a10",
+      "family": "poisson",
+      "alpha": 1.0,
+      "max_iter": 500,
+      "tol": 0.0001
+    },
+    {
+      "id": "tree-80",
+      "family": "hist_tree",
+      "max_iter": 80,
+      "max_leaf_nodes": 15,
+      "min_samples_leaf": 30,
+      "learning_rate": 0.08,
+      "l2_regularization": 1.0
+    }
+  ],
+  "smoke_candidates": [
+    "poisson-a01",
+    "tree-80"
+  ],
+  "baselines": [
+    "last4mean",
+    "seasonal52"
+  ],
+  "promotion": {
+    "relative_mae_gain": 0.02,
+    "minimum_winning_folds": 2,
+    "maximum_fold_ratio": 1.1,
+    "tie_order": [
+      "last4mean",
+      "seasonal52",
+      "poisson-a10",
+      "poisson-a01",
+      "tree-80"
+    ]
+  },
+  "qualification": {
+    "minimum_observations": 52,
+    "minimum_unique_prices": 5,
+    "minimum_price_ratio": 1.1,
+    "elasticity_min": -5.0,
+    "elasticity_max": -0.05,
+    "maximum_fold_spread": 1.5,
+    "minimum_series_mae_gain": 0.0,
+    "joint_minimum_observations": 8,
+    "joint_minimum_unique_prices": 3
+  },
+  "resources": {
+    "threads": 2,
+    "memory_bytes": 2147483648,
+    "smoke_hard_seconds": 180,
+    "selection_hard_seconds": 600,
+    "soft_seconds": 480,
+    "heartbeat_seconds": 5,
+    "disk_free_bytes": 1073741824,
+    "minimum_available_bytes": 4294967296,
+    "confirmation_hard_seconds": 600,
+    "refit_hard_seconds": 300,
+    "stale_progress_seconds": 30
+  },
+  "permissions": {
+    "cloud": false,
+    "gpu": false,
+    "publication": false,
+    "causal_claim": false,
+    "resume": false
+  },
+  "features": {
+    "time_origin": 40,
+    "cycle_period": 52,
+    "horizon": 4
+  },
+  "admission": {
+    "maximum_series": 300,
+    "maximum_training_rows": 40000
+  }
+}

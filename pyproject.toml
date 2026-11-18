@@ -7,10 +7,17 @@ name = "pricing-engine"
 version = "0.1.0"
 description = "Auditable weekly pricing research data foundation"
 requires-python = ">=3.12,<3.14"
-dependencies = ["pandas==3.0.3", "numpy==2.4.6"]
+dependencies = [
+    "pandas==3.0.3",
+    "numpy==2.4.6",
+    "scikit-learn==1.9.1",
+    "joblib==1.5.3",
+    "threadpoolctl==3.6.0",
+]
 
 [project.scripts]
 pricing-data = "pricing_engine.cli:main"
+pricing-model = "pricing_engine.model_cli:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/pricing_engine"]

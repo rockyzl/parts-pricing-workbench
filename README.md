@@ -4,7 +4,7 @@
 
 An independent learning prototype that makes a price decision inspectable: view a historical product, enter business assumptions, compare feasible prices, and save a local review note.
 
-The data is genuine **UCI Online Retail** gift-retail transactions. It is a public proxy for learning the workflow, **not automotive-parts data**. Costs, market ceilings and elasticity inputs are explicit scenario assumptions. This first version does not train an elasticity model or call an LLM.
+The public demo uses genuine **UCI Online Retail** gift-retail transactions. It is a public proxy for learning the workflow, **not automotive-parts data**. Costs, market ceilings and elasticity inputs are explicit scenario assumptions. This first version does not train an elasticity model or call an LLM.
 
 ## Try it
 
@@ -52,7 +52,7 @@ python3 -m http.server 8791 --directory web
 
 Open http://localhost:8791. The browser executes `web/engine.mjs` on every calculation; results are not prerecorded.
 
-V2 development now has a separate Python weekly-data foundation. The public page above remains V1. See the [Phase 1 commands and audit](docs/pricing-phase1-handoff.md) and [validated upload contract](docs/data-contracts/weekly-pricing-v1.md). V2 model training and the authenticated public workflow are later phases.
+V2 development has completed the Python weekly-data foundation and independently reviewed local OJ model training. The frozen Poisson model's confirmation MAE is 7,698.47 (recent-mean baseline: 11,921.55), conditional on realized prices and advertising; this is not causal price-response or profit evidence. See the [Phase 2 results and handoff](docs/pricing-phase2-handoff.md), [model runbook](docs/model-runbook-v2.md), and [validated upload contract](docs/data-contracts/weekly-pricing-v1.md). The public page remains V1. V2 pricing, hosted uploads/retraining, authentication and shared review are still to be implemented; local raw data and model artifacts are excluded from Git.
 
 To regenerate the data, install `requirements-data.txt`, download the official [UCI ZIP](https://archive.ics.uci.edu/static/public/352/online+retail.zip) as `data/raw/online-retail.zip`, and run:
 
@@ -66,4 +66,4 @@ The downloader receipt and expected SHA-256 are in `docs/data-source.json`. Raw 
 
 Tests cover conflicting limits, inward rounding, zero sales, malformed inputs, unchanged prices, the teaching weight, and independent exhaustive-grid arithmetic. Browser verification checks all public cases, state invalidation, language switching, review/export and mobile layout.
 
-Next modeling work must establish a time-based evaluation protocol and suitable observed inputs before estimating sparse-item demand or price response. Forecast accuracy and causal commercial impact must be evaluated separately. See [source attribution](THIRD_PARTY.md) for the researched open-source references.
+The next V2 phase will connect the reviewed model to bounded price scenarios, explicit business assumptions and full-catalog hold/fallback handling. Forecast accuracy and causal commercial impact remain separate. See the [final model review](docs/reviews/phase2-final-reference-review.md) and [source attribution](THIRD_PARTY.md).
