@@ -110,3 +110,20 @@ The entire `src/pricing_engine` tree still matches the accepted Phase 3 commit. 
 | `workbench/ui.mjs` | `17fa2e898b39e6bc1541e9509a72ee0e586f59d1f39ed6231ee60dafaca0a93f` |
 
 Actual image pull/runtime, managed-identity access, real Firebase users, restart persistence, reference comparison, training execution and multi-user publication are still hosted acceptance work. Bind the built image digest and final private deployment configuration to the separate first-run review before any fit.
+
+## Actual provider resource-default amendment — 2026-11-18
+
+**Decision: approved to build and deploy the exact replacement context below within the previously reviewed personal resources.** The previous source/image context is superseded for the hosted execution scope. This remains build/deployment approval only; no real training execution is approved here.
+
+Independently inspected the privately retained actual deployed-job SDK readback. Its only newly reported resource default is `resources.ephemeralStorage: ""`, alongside the expected 2 CPU and `4Gi` memory. The narrow dispatcher correction removes only absent, null or empty-string `ephemeralStorage`. Nonempty settings, numbers, booleans, collections and unknown resource fields remain subject to the exact template comparison. The fixed model protocol, parameters, budgets and all other image files are unchanged.
+
+Independently reran `.venv/bin/python -m unittest discover -s tests/training -p 'test_training.py'`: **17 tests passed**. The amended test includes three empty-default variants, six rejected nonempty/type variants and an unknown-resource rejection, preserving the earlier provider-template cases. No provider calls or fits occurred.
+
+- `src/pricing_web/training.py`: `ad255ff973f6e3739c645243b49eee7075a09d333bced2550f7b76b057ceae1b`.
+- `tests/training/test_training.py`: `d431a6e8073f34f4b78c91de30d989dd71f11f30f4b3024449f0f28a400df0bf`.
+- Replacement isolated context: `/tmp/pricing-provider-context-20261118-dj9jdacx/context`.
+- Source mapping hash: `6c735ddcf36536ec772e82b72fbce6c6c99ace7e47e83bcd2e38a46dbc1fe8f5`.
+- [Replacement full inventory](deployment-image-source-v2.json), SHA-256 `b30271f96c797a74aacfc5bafcf3876b7496a7be23955fbd63645b4240e8b8ac`.
+- Unchanged lock SHA-256: `764b9fde6730c5b6705f5b75748ca199dc0438fd67ae34beabdb7012981d991d`.
+
+The new context contains **43 allowlisted files / 3,447,828 bytes**, plus its manifest. Its inventory differs from the prior reviewed context at exactly `src/pricing_web/training.py`; a post-copy source inventory matches. Exact tree verification, `image_verify.verify(context)`, unchanged Phase 3 core-engine verification and the targeted credential/private-identifier scan all pass. Hosted acceptance scripts, credentials, private data, model bundles and tests remain outside the image. Use the actual newly built digest and the corresponding live template evidence for the later independently authored operational execute-only review.

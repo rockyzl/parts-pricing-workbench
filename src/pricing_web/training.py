@@ -130,6 +130,12 @@ class AzureJobDispatcher:
         if deployed.get("volumes") in (None, []): deployed.pop("volumes", None)
         for container in deployed.get("containers", []):
             if container.get("args") is None: container["args"] = []
+            # Azure's actual job GET adds an empty ephemeralStorage default.
+            # Only the absent/null/empty default is equivalent to our template;
+            # any configured value and every other resource field remain bound.
+            resources = container.get("resources", {})
+            if resources.get("ephemeralStorage") in (None, ""):
+                resources.pop("ephemeralStorage", None)
             container["env"] = sorted(container.get("env", []), key=lambda x: x["name"])
         conf = props.get("configuration", {})
         identity = deepcopy(job.get("identity"))

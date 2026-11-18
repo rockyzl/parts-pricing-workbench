@@ -344,13 +344,25 @@ class TrainingTests(unittest.TestCase):
                 if volumes != "absent": template["volumes"] = volumes
                 template["containers"][0]["args"] = None
                 with self.subTest(init=init, volumes=volumes): verify(value)
-        for change in ("init", "volumes", "unknown_template", "unknown_container", "args", "cpu", "extra_env", "extra_container"):
+        for ephemeral in ("absent", None, ""):
+            value = deepcopy(original)
+            resources = value["properties"]["template"]["containers"][0]["resources"]
+            if ephemeral != "absent": resources["ephemeralStorage"] = ephemeral
+            with self.subTest(ephemeral=ephemeral): verify(value)
+        for ephemeral in ("8Gi", "0Gi", 0, False, [], {}):
+            value = deepcopy(original)
+            value["properties"]["template"]["containers"][0]["resources"]["ephemeralStorage"] = ephemeral
+            with self.subTest(rejected_ephemeral=ephemeral), self.assertRaises(WebError) as caught:
+                verify(value)
+            self.assertEqual(caught.exception.code, "training_deployment_drift")
+        for change in ("init", "volumes", "unknown_template", "unknown_container", "unknown_resource", "args", "cpu", "extra_env", "extra_container"):
             value = deepcopy(original); template = value["properties"]["template"]
             container = template["containers"][0]
             if change == "init": template["initContainers"] = [{"name": "unexpected"}]
             elif change == "volumes": template["volumes"] = [{"name": "unexpected"}]
             elif change == "unknown_template": template["unexpectedSetting"] = []
             elif change == "unknown_container": container["unexpectedSetting"] = None
+            elif change == "unknown_resource": container["resources"]["unexpectedSetting"] = None
             elif change == "args": container["args"] = ["--unexpected"]
             elif change == "cpu": container["resources"]["cpu"] = 4
             elif change == "extra_env": container["env"].append({"name": "UNEXPECTED", "value": "1"})
