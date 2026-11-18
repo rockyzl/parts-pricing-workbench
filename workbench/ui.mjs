@@ -71,6 +71,7 @@ export function lineChart(records, field, {label = '', chinese = false, compact 
 export function errorCopy(error, chinese = false) {
   const code = error.code || 'REQUEST_FAILED';
   const messages = {
+    MODEL_SNAPSHOT_MISMATCH:['The saved model does not match this snapshot’s registry or cutoff. Reload the snapshot and choose a matching saved model.','保存模型与此快照的注册记录或截止周不匹配。请重新载入快照并选择匹配模型。'],
     INFEASIBLE_APPROVAL:['A selected entry has no allowed executable price. Inspect its reasons, then revise, reject or exclude it.','某条所选记录没有可执行的合规价格。请检查理由，然后修改、拒绝或排除。'],
     COMPARISON_REQUIRED:['Compare this revision before sending it for review.','提交审核前，请先比较此版本。'],
     TRAINING_UNAVAILABLE:['Model training is currently unavailable. Your saved records and plans remain available.','模型训练暂不可用，已保存的记录和方案仍可访问。'],

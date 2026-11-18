@@ -2,6 +2,7 @@
 from concurrent.futures import ThreadPoolExecutor
 from copy import deepcopy
 from dataclasses import replace
+from types import SimpleNamespace
 import hashlib
 import io
 import json
@@ -323,6 +324,39 @@ class TrainingTests(unittest.TestCase):
         self.assertIn("/subscriptions/" + self.config.subscription_id + "/", request.url)
         self.assertIn("api-version=2026-07-01", request.url)
         self.assertEqual(json.loads(request.body), template)
+
+    def test_deployment_readback_known_empty_collections_only(self):
+        binding = self.config.deployment_binding
+        original = {"identity": deepcopy(binding["identity"]), "properties": {
+            "template": self.config.template(), "configuration": {key: deepcopy(binding[key])
+                for key in ("triggerType", "replicaTimeout", "replicaRetryLimit", "manualTriggerConfig")}}}
+        dispatcher = object.__new__(AzureJobDispatcher)
+        dispatcher.config = self.config
+        def verify(value):
+            dispatcher.client = SimpleNamespace(jobs=SimpleNamespace(get=lambda *args:
+                SimpleNamespace(as_dict=lambda: deepcopy(value))))
+            return dispatcher.validate_deployment()
+        for init in ("absent", None, []):
+            for volumes in ("absent", None, []):
+                value = deepcopy(original); template = value["properties"]["template"]
+                template.pop("initContainers", None)
+                if init != "absent": template["initContainers"] = init
+                if volumes != "absent": template["volumes"] = volumes
+                template["containers"][0]["args"] = None
+                with self.subTest(init=init, volumes=volumes): verify(value)
+        for change in ("init", "volumes", "unknown_template", "unknown_container", "args", "cpu", "extra_env", "extra_container"):
+            value = deepcopy(original); template = value["properties"]["template"]
+            container = template["containers"][0]
+            if change == "init": template["initContainers"] = [{"name": "unexpected"}]
+            elif change == "volumes": template["volumes"] = [{"name": "unexpected"}]
+            elif change == "unknown_template": template["unexpectedSetting"] = []
+            elif change == "unknown_container": container["unexpectedSetting"] = None
+            elif change == "args": container["args"] = ["--unexpected"]
+            elif change == "cpu": container["resources"]["cpu"] = 4
+            elif change == "extra_env": container["env"].append({"name": "UNEXPECTED", "value": "1"})
+            else: template["containers"].append(deepcopy(container))
+            with self.subTest(rejected=change), self.assertRaises(WebError) as caught: verify(value)
+            self.assertEqual(caught.exception.code, "training_deployment_drift")
 
 
 if __name__ == "__main__": unittest.main()

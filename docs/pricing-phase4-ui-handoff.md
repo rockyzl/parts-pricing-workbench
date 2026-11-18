@@ -59,3 +59,26 @@ The client deletes a mutation’s retry key only after the complete successful J
 Private async operations capture an identity generation and a scoped API client. The transport checks that generation before dispatch and after authentication, hashing, response headers and full body reads; it also aborts active requests on identity invalidation. Logical operations guard every asynchronous continuation before writing state or starting a subsequent action, including pagination, uploads, row details, review batches, training polling, downloads and sign-in. This remains safe if a transport ignores abort.
 
 Sign-out bypasses the busy-operation helper and synchronously clears identity, all private cached records/results, unsaved forms, selection, polling, errors and pending mutation keys before displaying the public sample. An actual actor change has the same purge. Same-actor reauthentication invalidates older operations but retains safe unsent fields and interrupted keys, then reloads permissions/revision. Cancelling sign-in fences its late provider response. Aborting a browser request does not undo a server mutation that was already accepted; a later sign-in reloads authoritative server state.
+
+## Operational model discovery and refresh recovery
+
+`workbench/models.mjs` adapts the actual operational result schema for display; it performs no pricing or forecasting calculations. Snapshot loading now paginates the workspace model registry and filters exact `snapshot_id`. Model details additionally require a matching origin/cutoff. A compatible saved-plan binding—including an explicit null binding—takes priority. A sole matching model can be selected automatically; otherwise the user chooses from the saved-model picker. Registry order is never described as newest or best. Free inspection choices remain in memory; the saved plan supplies the durable binding after sign-in/refresh.
+
+The picker is locked while viewing an existing plan. “Choose a model for a new draft” opens its snapshot and clears the local plan/rows before another model can be selected; the old server plan remains unchanged. A new draft carries the selected model ID, including a forecast-only baseline model for provenance. The server still determines whether it can support any price response.
+
+Operational demand evidence comes only from `confirmation.comparisons[confirmation.demand_candidate]` when that candidate passed its automatic rule. The retained `price_candidate` and `bounded_price_scenarios` capability are shown separately. A retained `last4mean` baseline with empty or rejected comparisons receives no invented confirmation score. Available `selection.pooled_mae` values are in a disclosure labeled selection-stage evidence. Operational results are explicitly not independently reviewed, and WAPE is absent when the result does not provide it. The OJ reference metrics are never copied onto an uploaded model.
+
+The authorized training-run collection is read on snapshot reopening. Matching runs with `slot_released:false` remain recoverable even if their worker state is `succeeded` or `failed`. The most recent such run is chosen by server `created_at`, with a stable ID tie-break. Loading or polling never posts another job. The existing explicit completion-check action reconciles provider termination and registration. A missing local training service reports status unavailable while preserving access to existing snapshots/models.
+
+Polling captures run ID, snapshot ID, identity generation, model-selection generation, and the current plan ID/model binding/revision. Opening another snapshot/plan, signing out or explicitly choosing another model fences old requests, including errors and subsequent model lookups. A late completion cannot repaint another snapshot, replace an explicit model choice, or overwrite a saved-plan binding that commits while its model response is delayed. A model is shown as newly available only after the service returns its registered `model_id`.
+
+Import now links the deployment-owned `workbench/downloads/synthetic-weekly-teaching.csv`: 200 invented records, two series, 100 weeks, cutoff 100. English and Chinese copy explicitly identifies its invented USD values and distinguishes it from the OJ source. The accompanying JSON provenance remains deployment-owned.
+
+Focused checks added and passed:
+
+```bash
+node --test tests/web_frontend/*.test.mjs
+uv run --no-project --with playwright python tests/web_frontend/browser_operational.py
+```
+
+There are now 17 Node tests (11 client/identity and six model/run presentation tests). The operational Chromium test uses the exact returned operational shape, without top-level `metrics` or detail `snapshot_id`. It checks paginated rediscovery after a fresh page/sign-in, explicit multiple-model selection, selection vs confirmation evidence, demand vs price candidates, baseline fallback, null plan bindings, origin mismatch, a new draft without modifying the old plan, the real synthetic CSV download, recovery after reload without a job POST, explicit reconciliation, and delayed run responses after snapshot/model selection changes. All model results in this focused test are clearly synthetic HTTP fixtures; no fitting or cloud action is performed.

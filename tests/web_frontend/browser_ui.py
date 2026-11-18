@@ -57,8 +57,10 @@ class Contract:
         prefix='/api/v1/workspaces/test'
         suffix=path.removeprefix(prefix)
         if suffix=='/snapshots':return reply(page([SNAP]))
+        if suffix=='/training-runs':return reply(page([]))
         if suffix=='/plans':return reply(page([self.plan]))
         if suffix=='/pricebooks':return reply(page(self.books))
+        if suffix=='/models':return reply(page([{**MODEL,'snapshot_id':'snap_test','allowed_uses':['bounded_price_scenarios']}]))
         if suffix=='/models/model_test':return reply(MODEL)
         if suffix=='/snapshots/snap_test':return reply(SNAP)
         if suffix=='/snapshots/snap_test/catalog':return reply(page(CATALOG))

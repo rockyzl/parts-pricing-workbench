@@ -1,3 +1,4 @@
+import {snapshotModels, chooseModelId, modelEvidence, recoverTrainingRun} from './models.mjs';
 import {ApiClient, ApiError, OperationCancelled, Session} from './api.mjs';
 import {escapeHTML as h, number as n, titleCase, rowId, decision, rowReason, reasonText, visibleRows, splitBatches, lineChart, errorCopy, statusText} from './ui.mjs';
 
@@ -5,12 +6,12 @@ const app = document.querySelector('#app');
 const dialog = document.querySelector('#sign-in-dialog');
 const state = {
   chinese:false, step:2, config:null, sample:null, me:null, workspace:null, snapshots:[], plans:[], pricebooks:[],
-  snapshot:null, model:null, plan:null, rows:[], catalog:[], selected:null, detail:null, history:null, events:[],
+  snapshot:null, model:null, models:[], modelSelections:{}, plan:null, rows:[], catalog:[], selected:null, detail:null, history:null, events:[],
   query:'', filter:'all', selectedReviews:new Set(), busy:'', error:null, message:'', drafts:{}, dirty:false,
-  run:null, reviewProgress:null, pricebook:null, guest:true, detailLoading:false, teachingAccepted:false,
+  run:null, trainingRecoveryUnavailable:false, reviewProgress:null, pricebook:null, guest:true, detailLoading:false, teachingAccepted:false,
 };
 try { state.chinese = localStorage.getItem('pricing-language') === 'zh'; } catch {}
-let session, api, pollTimer, detailSequence = 0, identityGeneration = 0;
+let session, api, pollTimer, detailSequence = 0, identityGeneration = 0, modelSelectionGeneration = 0;
 const t = (en,zh) => state.chinese ? zh : en;
 const prefix = () => `/api/v1/workspaces/${encodeURIComponent(state.workspace.workspace_id)}`;
 const cap = action => !state.guest && (state.workspace?.capabilities || []).includes(action);
@@ -28,7 +29,7 @@ const pendingCount = () => state.rows.filter(row => !['approve_change','approve_
 function preserveForms() {
   if (state.resetForms) return;
   app.querySelectorAll('input[id],textarea[id],select[id]').forEach(input => {
-    if (['password','file','checkbox'].includes(input.type) || ['catalog-query','catalog-filter'].includes(input.id)) return;
+    if (['password','file','checkbox'].includes(input.type) || ['catalog-query','catalog-filter','model-picker'].includes(input.id)) return;
     state.drafts[input.id] = input.value;
   });
 }
@@ -63,23 +64,51 @@ function guestNote() {
 }
 function renderImport() {
   return heading(1,'Start with weekly sales','从每周销售记录开始','Each catalog entry follows one brand at one store. Keep all entries together through planning and review.','每条目录记录对应一个品牌在一家门店的历史。制定方案和审核时，保留全部记录。') +
-  `<div class="two-columns"><section class="panel"><div class="panel-body"><h2>${label('Import your records','导入你的记录')}</h2><p class="explanation">${label('Use a UTF-8 CSV with weekly prices and recorded sales. Your records and results stay in this workspace.','使用包含每周价格和记录销量的 UTF-8 CSV。记录与结果仅保存在此工作区。')}</p><form id="upload-form"><div class="upload-area"><label for="csv-file" class="field-label">${label('Weekly sales CSV','每周销售 CSV')}</label><input id="csv-file" name="file" type="file" accept=".csv,text/csv" required ${!cap('upload')?'disabled':''}><p>${label('Up to 10 MiB · 100,000 records · 2,000 entries. Model training and price comparison support up to 300 entries.','最多 10 MiB、100,000 条记录、2,000 个组合。模型训练与价格比较最多支持 300 个组合。')}</p></div><label><span class="field-label">${label('Last complete source week to use','使用的最后一个完整原始周编号')}</span><input id="upload-cutoff" name="cutoff" type="number" step="1" required placeholder="160" ${!cap('upload')?'disabled':''}></label><p class="form-note">${label('For date-based CSVs, use the week offset from Monday 1970-01-05. Only records known by the cutoff enter this snapshot.','日期格式 CSV 使用自 1970-01-05（周一）起的周偏移量。快照只包括截至该时点已知的记录。')}</p><div class="actions space-top"><button class="btn primary" type="submit" ${!cap('upload')?'disabled':''}>${label('Save dataset and check data','保存数据并检查')}</button>${btn('template','Download CSV template','下载 CSV 模板')}</div></form>${!cap('upload')?`<p class="form-note">${label('Upload requires an invited account with upload access.','上传需要具有上传权限的受邀账号。')}</p>`:''}${jsonDetails('CSV columns and validation','CSV 字段与校验',{required:['item_id','price','units','currency','unit','price_basis','source_id'],time:'week_index + known_at_index OR week_start + known_at_date',optional:['site_id','feature_ad','returns_units'],unknown_columns:'rejected',missing_values:'preserved, never converted to zero'})}</div></section>
+  `<div class="two-columns"><section class="panel"><div class="panel-body"><h2>${label('Import your records','导入你的记录')}</h2><p class="explanation">${label('Use a UTF-8 CSV with weekly prices and recorded sales. Your records and results stay in this workspace.','使用包含每周价格和记录销量的 UTF-8 CSV。记录与结果仅保存在此工作区。')}</p><form id="upload-form"><div class="upload-area"><label for="csv-file" class="field-label">${label('Weekly sales CSV','每周销售 CSV')}</label><input id="csv-file" name="file" type="file" accept=".csv,text/csv" required ${!cap('upload')?'disabled':''}><p>${label('Up to 10 MiB · 100,000 records · 2,000 entries. Model training and price comparison support up to 300 entries.','最多 10 MiB、100,000 条记录、2,000 个组合。模型训练与价格比较最多支持 300 个组合。')}</p></div><label><span class="field-label">${label('Last complete source week to use','使用的最后一个完整原始周编号')}</span><input id="upload-cutoff" name="cutoff" type="number" step="1" required placeholder="160" ${!cap('upload')?'disabled':''}></label><p class="form-note">${label('For date-based CSVs, use the week offset from Monday 1970-01-05. Only records known by the cutoff enter this snapshot.','日期格式 CSV 使用自 1970-01-05（周一）起的周偏移量。快照只包括截至该时点已知的记录。')}</p><div class="actions space-top"><button class="btn primary" type="submit" ${!cap('upload')?'disabled':''}>${label('Save dataset and check data','保存数据并检查')}</button>${btn('template','Download CSV template','下载 CSV 模板')}<a class="btn" href="/workbench/downloads/synthetic-weekly-teaching.csv" download>${label('Download synthetic 100-week CSV','下载 100 周合成示例 CSV')}</a></div><p class="form-note">${label('The synthetic CSV contains 2 invented products and 200 records over 100 weeks. Use cutoff 100. Its USD values are invented test data, separate from the orange juice source.','合成 CSV 包含 2 个虚构商品、100 周共 200 条记录。请使用截至周编号 100。USD 数值是虚构测试数据，与橙汁原始数据无关。')}</p></form>${!cap('upload')?`<p class="form-note">${label('Upload requires an invited account with upload access.','上传需要具有上传权限的受邀账号。')}</p>`:''}${jsonDetails('CSV columns and validation','CSV 字段与校验',{required:['item_id','price','units','currency','unit','price_basis','source_id'],time:'week_index + known_at_index OR week_start + known_at_date',optional:['site_id','feature_ad','returns_units'],unknown_columns:'rejected',missing_values:'preserved, never converted to zero'})}</div></section>
   <section class="panel"><div class="panel-body"><h2>${label('Continue with saved work','继续已保存的工作')}</h2>${state.guest ? `<p class="explanation">${label('The prepared orange juice example starts at the data check. Nothing you view changes store prices.','准备好的橙汁示例从数据检查开始。浏览示例不会更改门店价格。')}</p>${btn('check','Inspect the saved example','检查保存的示例',{primary:true,extra:'style="margin-top:18px"'})}` : `<div class="choice-list">${state.snapshots.map(snapshot=>`<div class="choice"><div><strong>${label('Snapshot','快照')} ${safe(snapshot.cutoff)}</strong><p>${safe(snapshot.id)} · ${n(snapshot.scope_count,0)} ${label('entries','个组合')}</p></div>${btn('open-snapshot','Open','打开',{extra:`data-id="${safe(snapshot.id)}"`})}</div>`).join('') || `<p class="empty">${label('Import a CSV to create your first snapshot.','导入 CSV，创建首个快照。')}</p>`}</div><h3 class="space-top">${label('Saved plans','已保存的方案')}</h3><div class="choice-list">${state.plans.map(plan=>`<div class="choice"><div><strong>${label('Revision','版本')} ${safe(plan.revision)} · ${safe(statusText(plan.state,state.chinese))}</strong><p>${safe(plan.id)}</p></div>${btn('open-plan','Open','打开',{extra:`data-id="${safe(plan.id)}"`})}</div>`).join('') || `<p class="empty">${label('No saved plan yet. Check a snapshot, then create a plan.','尚无保存的方案。检查快照后，即可创建方案。')}</p>`}</div>`}</div></section></div>`;
 }
 function renderCheck() {
   const analysis = state.snapshot?.analysis;
-  const s = stats(), metrics = state.model?.metrics || {};
+  const s = stats();
   return heading(2,'See the sales behind this plan','查看这份方案依据的销售记录','Check what was recorded, what is missing, and how close past predictions came to actual sales.','检查已有记录、缺失信息，以及历史预测与记录销量的差距。',btn('plan','View price plan','查看价格方案',{primary:true,disabled:!state.snapshot})) +
   (state.guest ? guestNote() : '') + (!analysis ? `<div class="panel panel-body"><p class="empty">${label('No snapshot is loaded. Import weekly records or choose a saved snapshot.','尚未载入快照。请导入每周记录或选择保存的快照。')}</p>${btn('import','Choose records','选择记录',{primary:true})}</div>` :
   `<div class="facts">${fact(n(s.observed_rows,0),'Recorded observations','条观测记录')}${fact(n(s.series,0),'Catalog entries','个目录组合')}${fact(n(s.missing_after_first_observation_rows,0),'Missing weeks after first record','首次记录后缺失的周')}${fact(n(analysis.outliers?.flagged_rows,0),'Unusual values retained for inspection','保留待检查的异常值')}</div>
   <div class="two-columns"><section class="panel"><div class="panel-body"><div class="chart-title"><h2>${label('Recorded sales by week','每周记录销量')}</h2><span>${label('All catalog entries','全部目录组合')}</span></div>${lineChart(analysis.weekly_history || [],'units',{label:t('Recorded source sales by source week; missing observations remain gaps.','按原始周编号展示的记录销量；缺失观测保留为空缺。'),chinese:state.chinese})}<p class="explanation">${label('Source sales units. Missing weeks are unknown, not zero sales. Seasonal patterns and advertising can move together with price; this chart does not separate their effects.','原始销量单位。缺失周是未知值，不是零销量。季节波动和广告可能与价格共同变化，此图无法分离各自影响。')}</p><ul class="factor-list"><li><span>${label('Price & recorded sales','价格与记录销量')}</span><span class="factor-state">${label('Available','已有记录')}</span></li><li><span>${label('Feature advertising','广告投放标记')}</span><span class="factor-state">${safe(statusText(analysis.factors?.feature_advertising?.status || 'unknown',state.chinese))}</span></li><li><span>${label('Cost · stock · promotion spend','成本 · 库存 · 促销费用')}</span><span class="factor-state">${label('Missing business inputs','缺少经营输入')}</span></li></ul><details class="details"><summary>${label('Understand the data and seasonality','理解数据和季节性')}</summary><p>${label('The example uses source weeks, not verified calendar dates. Feature advertising describes only the supplied ad flag; coupons, other promotions, competitors, stock and realized profit are not observed. The model may use repeated historical patterns, but future accuracy is unknown.','示例使用原始周编号，没有核实对应日历日期。广告字段仅表示提供的广告标记；优惠券、其他促销、竞争对手、库存和已实现利润均未观测。模型可参考历史重复模式，但未来准确度未知。')}</p></details></div></section>
-  <section class="panel"><div class="panel-body"><h2>${label('Check predictions against past sales','用历史销量检查预测')}</h2><p class="explanation">${label('Lower average error means predictions were closer to recorded sales. Compare the model with a simple recent-sales estimate.','平均误差越小，预测越接近记录销量。将模型与近期销量的简单估计作比较。')}</p>${metrics.mae !== undefined ? `<table class="metrics"><caption class="sr-only">${label('Historical prediction error','历史预测误差')}</caption><thead><tr><th>${label('Historical check','历史检验')}</th><th>${label('Average absolute error','平均绝对误差')}</th></tr></thead><tbody><tr><td>${label('Recent-sales estimate','近期销量估计')}<div class="metric-bar baseline"><i style="width:100%"></i></div></td><td>${n(metrics.baseline_mae,3)}</td></tr><tr><td><strong>${label(state.model?.review_status==='reviewed_reference_demo'?'Reviewed reference model':'Saved model estimate',state.model?.review_status==='reviewed_reference_demo'?'经过检查的参考模型':'保存的模型估计')}</strong><div class="metric-bar"><i style="width:${Math.min(100,100*Number(metrics.mae)/Number(metrics.baseline_mae))}%"></i></div></td><td><strong>${n(metrics.mae,3)}</strong></td></tr></tbody></table><p class="explanation">${label('Weighted absolute error','加权绝对误差')}: ${n(Number(metrics.wape)*100,4)}%. ${label('Recorded prices and feature advertising were supplied for this historical check. This does not prove that changing prices causes a gain.','历史检验使用已记录的价格与广告状态，并不能证明调价会带来增益。')}</p>` : `<p class="empty">${label('No historical model evidence is available for this snapshot. Training output needs its own evaluation; it does not inherit the example’s results.','此快照没有可用的历史模型依据。新训练结果需要独立评估，不能继承示例成绩。')}</p>`}<details class="details"><summary>${label('Learn how the model uses limited history','了解模型如何处理有限历史')}</summary><p>${label('A model can share a brand’s price–sales relationship across stores, while using each store’s recent sales. That does not replace missing facts or make every entry safe to reprice. Entries without enough support remain visible as holds or explicit business decisions. No prediction intervals are available.','模型可合并同品牌在不同门店的价格与销量关系，同时使用各店近期销量。这不能替代缺失事实，也不意味着每条记录都适合调价。支持不足的记录仍保留为保持项或明确的经营决定。此处没有预测区间。')}</p></details>${jsonDetails('Model evidence and provenance','模型依据与来源',state.model)}${!state.guest ? renderTraining() : ''}</div></section></div>
+  <section class="panel"><div class="panel-body"><h2>${label('Check predictions against past sales','用历史销量检查预测')}</h2>${renderModelPicker()}${renderModelEvidence()}<details class="details"><summary>${label('Learn how the model uses limited history','了解模型如何处理有限历史')}</summary><p>${label('A model can share a brand’s price–sales relationship across stores, while using each store’s recent sales. That does not replace missing facts or make every entry safe to reprice. Entries without enough support remain visible as holds or explicit business decisions. No prediction intervals are available.','模型可合并同品牌在不同门店的价格与销量关系，同时使用各店近期销量。这不能替代缺失事实，也不意味着每条记录都适合调价。支持不足的记录仍保留为保持项或明确的经营决定。此处没有预测区间。')}</p></details>${jsonDetails('Model evidence and provenance','模型依据与来源',state.model)}${!state.guest ? renderTraining() : ''}</div></section></div>
   <section class="space-top">${renderCatalog(true)}</section>${jsonDetails('Source details and data quality','数据出处与质量',{provenance:analysis.provenance,factors:analysis.factors,concentration:analysis.concentration,catalog_stats:s})}`);
+}
+function renderModelPicker() {
+  if(state.guest)return '';
+  const selected=state.model?.id||'',bound=Boolean(state.plan);
+  return `<div class="model-picker space-top"><label><span class="field-label">${label('Saved model for this snapshot','此快照的已保存模型')}</span><select id="model-picker" class="full-width" ${bound||state.busy?'disabled':''}><option value="">${label('No model selected · holds and explicit rules','未选择模型 · 保持价格和明确规则')}</option>${state.models.map(model=>`<option value="${safe(model.id)}" ${selected===model.id?'selected':''}>${safe(model.id)} · ${label(model.allowed_uses?.includes('bounded_price_scenarios')?'Price scenarios available':'Forecast only',model.allowed_uses?.includes('bounded_price_scenarios')?'可比较价格情景':'仅预测')}</option>`).join('')}</select></label><p class="form-note">${bound?label('This plan keeps its saved model binding. Choosing a model for a new draft leaves this saved plan unchanged.','此方案保留已保存的模型绑定。为新草稿选择模型不会修改此已保存方案。'):state.models.length>1&&!selected?label('Several saved models match this snapshot. Choose one explicitly; the list does not imply which is newest or best.','有多个保存模型匹配此快照。请明确选择；列表顺序不表示哪个最新或最好。'):label('Only models registered to this exact snapshot are listed. Training results are rediscovered from the workspace after sign-in or reload.','仅列出注册到此快照的模型。登录或重新载入后，会从工作区重新查找训练结果。')}</p>${bound?btn('new-model-draft','Choose a model for a new draft','为新草稿选择模型',{disabled:!cap('edit')}):''}</div>`;
+}
+function renderModelEvidence() {
+  const evidence=modelEvidence(state.model);
+  if(evidence.kind==='none')return `<p class="empty">${label(state.models.length?'Choose a saved model above to inspect its own evidence.':'No saved model is available for this snapshot. Train one or continue with explicit business rules.',state.models.length?'请在上方选择保存模型，检查其独立依据。':'此快照没有可用的保存模型。可以训练模型，或继续采用明确的经营规则。')}</p>`;
+  const operational=evidence.kind==='operational',reviewed=state.model?.review_status==='reviewed_reference_demo';
+  const scoreAvailable=evidence.mae!==null&&evidence.baselineMae!==null;
+  const bar=evidence.baselineMae>0?Math.min(100,100*evidence.mae/evidence.baselineMae):0;
+  const modelLabel=operational?t('Confirmed demand estimate','确认阶段保留的销量估计'):reviewed?t('Reviewed reference model','经过检查的参考模型'):t('Saved model estimate','保存的模型估计');
+  let output=`<p class="explanation">${label('Lower average error means predictions were closer to recorded sales. Compare the model with a simple recent-sales estimate.','平均误差越小，预测越接近记录销量。将模型与近期销量的简单估计作比较。')}</p>`;
+  if(operational)output+=`<div class="notice neutral space-top"><strong>${label(evidence.retainedBaseline?'Recent-sales baseline retained':'Operational result · automatic confirmation rule',evidence.retainedBaseline?'保留近期销量基准':'运行结果 · 自动确认规则')}</strong><p>${label(evidence.retainedBaseline?'The saved forecasting choice is the recent-sales baseline. No learned demand model was retained after the automatic checks.':'The saved demand candidate passed the configured historical confirmation rule.',evidence.retainedBaseline?'保存的预测方法是近期销量基准。自动检查后，没有保留学习型销量模型。':'保存的销量候选模型通过了配置的历史确认规则。')}</p><p>${label('This training result has not been independently reviewed. It is not evidence of a causal gain or permission to publish prices.','此训练结果尚未经独立审核，不能证明因果增益，也不构成发布价格的许可。')}</p></div>`;
+  if(scoreAvailable)output+=`<table class="metrics"><caption class="sr-only">${label(operational?'Confirmation-stage historical prediction error':'Historical prediction error',operational?'确认阶段历史预测误差':'历史预测误差')}</caption><thead><tr><th>${label(operational?'Confirmation check':'Historical check',operational?'确认阶段检验':'历史检验')}</th><th>${label('Average absolute error','平均绝对误差')}</th></tr></thead><tbody><tr><td>${label('Recent-sales estimate','近期销量估计')}<div class="metric-bar baseline"><i style="width:100%"></i></div></td><td>${n(evidence.baselineMae,3)}</td></tr><tr><td><strong>${safe(modelLabel)}</strong><div class="metric-bar"><i style="width:${bar}%"></i></div></td><td><strong>${n(evidence.mae,3)}</strong></td></tr></tbody></table>`;
+  else output+=`<p class="explanation">${label(operational&&evidence.retainedBaseline?'The response does not provide a pooled confirmation score for the retained baseline. Selection-stage scores, when present, are shown separately below.':'No comparable historical error pair is supplied for the selected model.',operational&&evidence.retainedBaseline?'响应没有提供所保留基准的合并确认分数。如有选择阶段分数，会在下方单独列出。':'所选模型没有提供可比较的历史误差对。')}</p>`;
+  if(evidence.wape!==null)output+=`<p class="explanation">${label('Weighted absolute error','加权绝对误差')}: ${n(evidence.wape*100,4)}%.</p>`;
+  output+=`<p class="explanation">${label('Recorded prices and feature advertising were supplied for the historical check. This does not prove that changing prices causes a gain. Future accuracy is unknown.','历史检验使用已记录的价格与广告状态，并不能证明调价会带来增益。未来准确度未知。')}</p><div class="notice space-top"><strong>${label(evidence.priceAllowed?'Bounded price scenarios available':'Forecast only · no supported price-response model',evidence.priceAllowed?'可比较有范围限制的价格情景':'仅预测 · 没有受支持的价格响应模型')}</strong><p>${label(evidence.priceAllowed?'Price comparisons use a separately retained price candidate and still require support for each entry. Every price plan needs independent human review.':'Keep feasible reference prices or record explicit business rules. Forecast accuracy alone does not support changing prices.',evidence.priceAllowed?'价格比较使用另行保留的价格候选模型，且每条记录仍需足够支持。每份价格方案都需要独立人工审核。':'保持符合规则的参考价，或记录明确的经营规则。仅有预测准确度不能支持调价。')}</p></div>`;
+  if(operational){
+    output+=`<details class="details"><summary>${label('Demand choice, price capability and stage-specific evidence','销量选择、定价能力和各阶段依据')}</summary><dl class="dl"><dt>${label('Retained demand candidate','保留的销量候选')}</dt><dd>${safe(evidence.demandCandidate)}</dd><dt>${label('Retained price candidate','保留的价格候选')}</dt><dd>${safe(evidence.priceCandidate||t('None','无'))}</dd></dl>`;
+    const comparisons=Object.entries(evidence.comparisons);
+    if(comparisons.length)output+=`<h3>${label('Confirmation-stage comparisons','确认阶段比较')}</h3><table class="candidate-table"><thead><tr><th>${label('Candidate','候选')}</th><th>${label('Error','误差')}</th><th>${label('Baseline','基准')}</th><th>${label('Rule passed','通过规则')}</th></tr></thead><tbody>${comparisons.map(([name,value])=>`<tr><td>${safe(name)}</td><td>${n(value.pooled_mae,3)}</td><td>${n(value.baseline_mae,3)}</td><td>${label(value.accepted?'Yes':'No',value.accepted?'是':'否')}</td></tr>`).join('')}</tbody></table>`;
+    const scores=Object.entries(evidence.selectionScores);
+    if(scores.length)output+=`<h3 class="space-top">${label('Selection-stage error · earlier model selection','选择阶段误差 · 较早的模型选择')}</h3><p>${label('These scores belong to model selection. They are not confirmation scores or future accuracy.','这些分数属于模型选择阶段，并非确认阶段分数，也不是未来准确度。')}</p><table class="candidate-table"><thead><tr><th>${label('Candidate','候选')}</th><th>${label('Selection error','选择阶段误差')}</th></tr></thead><tbody>${scores.map(([name,score])=>`<tr><td>${safe(name)}</td><td>${n(score,3)}</td></tr>`).join('')}</tbody></table>`;
+    output+='</details>';
+  }
+  return output;
 }
 function renderTraining() {
   const run = state.run;
   const pipelines = state.config?.training?.pipeline_versions || state.config?.pipeline_versions || (state.config?.pipeline_version ? [state.config.pipeline_version] : []);
-  return `<div class="details"><h3>${label('Train on this snapshot','使用此快照训练')}</h3><p class="explanation training-copy">${label('Start the fixed weekly model pipeline. It needs at least 80 weeks and at most 300 entries. A completed run is saved as unreviewed; it does not approve price changes.','启动固定每周模型流程。至少需要 80 周，最多 300 个组合。完成结果保存为未审核状态，不会自动批准调价。')}</p><div class="actions space-top">${btn('train','Start model training','开始模型训练',{disabled:!cap('train') || !state.snapshot || !pipelines.length,extra:`data-pipeline="${safe(pipelines[0])}"`})}</div>${run ? `<div class="run-status" role="status"><strong>${safe(statusText(run.state,state.chinese))}</strong><p>${label('Current task','当前任务')}: ${safe(statusText(run.phase || 'awaiting_reconciliation',state.chinese))}</p><p>${n(run.completed_tasks,0)}${run.total_tasks ? ` / ${n(run.total_tasks,0)}` : ''} ${label('tasks completed','项任务已完成')}</p>${run.total_tasks ? `<progress value="${Number(run.completed_tasks)||0}" max="${Number(run.total_tasks)}">${n(run.completed_tasks,0)}</progress>` : ''}${run.error_code ? `<p>${safe(reasonText(run.error_code,state.chinese))}</p>` : ''}<div class="actions space-top">${btn('reconcile-run','Check job completion','核对任务完成状态',{disabled:!cap('train')})}${!['succeeded','failed','cancelled','timed_out'].includes(run.state)?btn('cancel-run','Cancel training','取消训练',{disabled:!cap('train')}):''}</div><p>${label('Status reflects completed server tasks. If completion is uncertain, check it before starting another run.','状态反映服务器实际完成的任务。若完成情况不明确，请先核对，再开始其他运行。')}</p></div>` : ''}</div>`;
+  return `<div class="details"><h3>${label('Train on this snapshot','使用此快照训练')}</h3><p class="explanation training-copy">${label('Start the fixed weekly model pipeline. It needs at least 80 weeks and at most 300 entries. A completed run is saved as unreviewed; it does not approve price changes.','启动固定每周模型流程。至少需要 80 周，最多 300 个组合。完成结果保存为未审核状态，不会自动批准调价。')}</p><div class="actions space-top">${btn('train','Start model training','开始模型训练',{disabled:!cap('train') || !state.snapshot || !pipelines.length,extra:`data-pipeline="${safe(pipelines[0])}"`})}</div>${state.trainingRecoveryUnavailable?`<p class="form-note">${label('Saved training status is unavailable in this service. Existing snapshots and models remain available.','此服务暂不能提供保存的训练状态，已有快照和模型仍可访问。')}</p>`:''}${run ? `<div class="run-status" role="status"><strong>${safe(run.slot_released===false&&['succeeded','failed'].includes(run.state)?t('Worker stopped · job completion needs checking','工作进程已停止 · 需核对任务完成状态'):statusText(run.state,state.chinese))}</strong><p>${label('Current task','当前任务')}: ${safe(statusText(run.phase || 'awaiting_reconciliation',state.chinese))}</p><p>${n(run.completed_tasks,0)}${run.total_tasks ? ` / ${n(run.total_tasks,0)}` : ''} ${label('tasks completed','项任务已完成')}</p>${run.total_tasks ? `<progress value="${Number(run.completed_tasks)||0}" max="${Number(run.total_tasks)}">${n(run.completed_tasks,0)}</progress>` : ''}${run.error_code ? `<p>${safe(reasonText(run.error_code,state.chinese))}</p>` : ''}<div class="actions space-top">${btn('reconcile-run','Check job completion','核对任务完成状态',{disabled:!cap('train')})}${!['succeeded','failed','cancelled','timed_out'].includes(run.state)?btn('cancel-run','Cancel training','取消训练',{disabled:!cap('train')}):''}</div><p>${label('Status reflects completed server tasks. If completion is uncertain, check it before starting another run.','状态反映服务器实际完成的任务。若完成情况不明确，请先核对，再开始其他运行。')}</p></div>` : ''}</div>`;
 }
 function renderAssumptions() {
   const usingExample = state.plan?.assumption_mode === 'teaching_60pct_v1' || state.guest && Boolean(state.sample?.assumptions);
@@ -148,12 +177,12 @@ function identityContext() {
   return {api:client,check:()=>{if(generation!==identityGeneration)throw new OperationCancelled();}};
 }
 function invalidateIdentity({purge=false,clearPending=false}={}) {
-  identityGeneration++; detailSequence++; clearTimeout(pollTimer);
+  identityGeneration++; modelSelectionGeneration++; detailSequence++; clearTimeout(pollTimer);
   api?.invalidate({clearPending}); state.busy='';
   if (purge) {
-    Object.assign(state,{me:null,workspace:null,snapshots:[],plans:[],pricebooks:[],snapshot:null,model:null,plan:null,
+    Object.assign(state,{me:null,workspace:null,snapshots:[],plans:[],pricebooks:[],snapshot:null,model:null,models:[],modelSelections:{},plan:null,
       rows:[],catalog:[],selected:null,detail:null,history:null,events:[],query:'',filter:'all',selectedReviews:new Set(),
-      error:null,message:'',drafts:{},dirty:false,run:null,reviewProgress:null,pricebook:null,guest:true,detailLoading:false,
+      error:null,message:'',drafts:{},dirty:false,run:null,trainingRecoveryUnavailable:false,reviewProgress:null,pricebook:null,guest:true,detailLoading:false,
       teachingAccepted:false,resetForms:true,step:2});
     announce('');
   }
@@ -179,7 +208,7 @@ function setPlan(data,etag) {
 function showCachedExample() {
   state.guest=true;
   if(!state.sample)return;
-  state.snapshot=state.sample.snapshot;state.model=state.sample.model;state.plan=state.sample.plan || null;
+  state.snapshot=state.sample.snapshot;state.model=state.sample.model;state.models=[];state.plan=state.sample.plan || null;
   state.catalog=state.sample.snapshot?.analysis?.series || [];state.rows=state.sample.rows || [];
   state.selected=null;state.detail=null;state.history=null;state.events=[];state.pricebook=null;
   state.dirty=false;state.drafts={};state.resetForms=true;state.query='';state.filter='all';
@@ -210,27 +239,58 @@ async function loadWorkspace(context=identityContext()) {
   else if(snapshots.length){await loadSnapshot(snapshots[0].id,context);context.check();state.step=2;}
   else state.step=1;
 }
-async function loadSnapshot(id,context=identityContext()) {
+async function savedModels(snapshot,context,{boundId,preferredId}={}) {
   context.check();const base=prefix();
+  const registered=await context.api.all(`${base}/models`);context.check();
+  const models=snapshotModels(registered,snapshot.id);
+  const id=chooseModelId(models,{boundId,preferredId,referenceId:snapshot.model_id});
+  if(id===undefined)throw new ApiError(409,{error:{code:'MODEL_SNAPSHOT_MISMATCH'}});
+  const model=id?(await context.api.request(`${base}/models/${encodeURIComponent(id)}`)).data:null;context.check();
+  if(model&&((model.snapshot_id&&model.snapshot_id!==snapshot.id)||(model.origin!==undefined&&model.origin!==snapshot.cutoff)))throw new ApiError(409,{error:{code:'MODEL_SNAPSHOT_MISMATCH'}});
+  return {models,model};
+}
+async function savedTrainingRun(snapshotId,context) {
+  try {
+    const runs=await context.api.all(`${prefix()}/training-runs`);context.check();
+    return {run:recoverTrainingRun(runs,snapshotId),unavailable:false};
+  }catch(error){
+    if(error instanceof ApiError&&error.status===503&&error.code==='training_unavailable')return {run:null,unavailable:true};
+    throw error;
+  }
+}
+function restoreRun(recovered,context) {
+  state.run=recovered.run;state.trainingRecoveryUnavailable=recovered.unavailable;
+  if(state.run&&!['succeeded','failed','cancelled','timed_out'].includes(state.run.state))scheduleRunPoll(context);
+}
+function scheduleRunPoll(context) {
+  const generation=modelSelectionGeneration;clearTimeout(pollTimer);
+  pollTimer=setTimeout(()=>refreshRun(context,generation),1500);
+}
+async function loadSnapshot(id,context=identityContext(),{boundId}={}) {
+  context.check();modelSelectionGeneration++;clearTimeout(pollTimer);state.run=null;const base=prefix();
   const {data}=await context.api.request(`${base}/snapshots/${encodeURIComponent(id)}`);context.check();
-  const [catalog,model]=await Promise.all([
+  const [catalog,saved,recovered]=await Promise.all([
     context.api.all(`${base}/snapshots/${encodeURIComponent(id)}/catalog`),
-    data.model_id?context.api.request(`${base}/models/${encodeURIComponent(data.model_id)}`).then(result=>result.data):null,
+    savedModels(data,context,{boundId,preferredId:state.modelSelections[id]}),
+    savedTrainingRun(id,context),
   ]);context.check();
-  Object.assign(state,{query:'',filter:'all',snapshot:data,catalog,model,plan:null,rows:[],selected:null,detail:null,history:null,pricebook:null,dirty:false,drafts:{},resetForms:true});
-  state.selectedReviews.clear();
+  Object.assign(state,{query:'',filter:'all',snapshot:data,catalog,model:saved.model,models:saved.models,plan:null,rows:[],selected:null,detail:null,history:null,pricebook:null,dirty:false,drafts:{},resetForms:true});
+  state.modelSelections[id]=saved.model?.id||null;state.selectedReviews.clear();restoreRun(recovered,context);
 }
 async function loadPlan(id,{preserveDraft=false}={},context=identityContext()) {
-  context.check();const base=prefix();
+  context.check();modelSelectionGeneration++;clearTimeout(pollTimer);state.run=null;const base=prefix();
   const {data,etag}=await context.api.request(`${base}/plans/${encodeURIComponent(id)}`);context.check();
-  if(data.snapshot_id&&state.snapshot?.id!==data.snapshot_id){await loadSnapshot(data.snapshot_id,context);context.check();}
-  const [rows,model,events,book]=await Promise.all([
+  let saved,recovered;
+  if(data.snapshot_id&&state.snapshot?.id!==data.snapshot_id){await loadSnapshot(data.snapshot_id,context,{boundId:data.model_id||null});context.check();saved={models:state.models,model:state.model};recovered={run:state.run,unavailable:state.trainingRecoveryUnavailable};}
+  const [rows,registry,events,book,training]=await Promise.all([
     (data.comparison_ref||data.proposal_hash)?context.api.all(`${base}/plans/${encodeURIComponent(id)}/rows`):[],
-    data.model_id&&data.model_id!==state.model?.id?context.api.request(`${base}/models/${encodeURIComponent(data.model_id)}`).then(result=>result.data):state.model,
+    saved||savedModels(state.snapshot,context,{boundId:data.model_id||null}),
     context.api.all(`${base}/plans/${encodeURIComponent(id)}/events`).catch(error=>{if(error instanceof OperationCancelled)throw error;return [];}),
     data.pricebook_id?context.api.request(`${base}/pricebooks/${encodeURIComponent(data.pricebook_id)}`).then(result=>result.data):null,
+    recovered||savedTrainingRun(state.snapshot.id,context),
   ]);context.check();
-  setPlan(data,etag);state.rows=rows;state.model=model;state.events=events;state.pricebook=book;
+  setPlan(data,etag);state.rows=rows;state.model=registry.model;state.models=registry.models;state.events=events;state.pricebook=book;
+  state.modelSelections[state.snapshot.id]=registry.model?.id||null;restoreRun(training,context);
   if(!preserveDraft){state.dirty=false;state.drafts={};state.resetForms=true;}
   if(!rows.some(row=>rowId(row)===state.selected)){state.selected=null;state.detail=null;state.history=null;}
 }
@@ -257,7 +317,7 @@ function readRules() {
 }
 async function createPlan(assumptionMode='none',rules=readRules(),context=identityContext()) {
   context.check();const base=prefix();
-  const {data}=await context.api.request(`${base}/plans`,{method:'POST',body:{snapshot_id:state.snapshot.id,model_id:state.model?.id||state.snapshot.model_id||null,period:state.snapshot.period,assumption_mode:assumptionMode,rules}});context.check();
+  const {data}=await context.api.request(`${base}/plans`,{method:'POST',body:{snapshot_id:state.snapshot.id,model_id:state.model?.id||null,period:state.snapshot.period,assumption_mode:assumptionMode,rules}});context.check();
   await loadPlan(data.id,{},context);context.check();state.step=3;
   state.message=t('Private draft saved. Compare prices to calculate every entry under these rules.','私密草稿已保存。点击比较价格，按这些规则计算每条记录。');
 }
@@ -290,15 +350,18 @@ async function reviewSelected(action) {
     context.check();state.message=t('Review saved for this version. Every completed group is now stored on the server.','此版本的审核已保存，每个完成的组都已存储在服务器。');
   });
 }
-async function refreshRun(context=identityContext()) {
+async function refreshRun(context=identityContext(),expectedSelection=modelSelectionGeneration) {
+  let current=()=>false;
   try {
-    context.check();if(!state.run||state.guest||!session.idToken)return;
-    const base=prefix(),runId=state.run.id;
-    const {data}=await context.api.request(`${base}/training-runs/${encodeURIComponent(runId)}`);context.check();
-    const model=data.model_id&&state.model?.id!==data.model_id?(await context.api.request(`${base}/models/${encodeURIComponent(data.model_id)}`)).data:state.model;context.check();
-    state.run=data;state.model=model;if(state.step===2&&!state.busy)render();
-    if(!['succeeded','failed','cancelled','timed_out'].includes(data.state))pollTimer=setTimeout(()=>refreshRun(context),5000);
-  }catch(error){if(error instanceof OperationCancelled)return;try{context.check();}catch{return;}state.error=error;if(!state.busy)render();}
+    context.check();if(expectedSelection!==modelSelectionGeneration||!state.run||state.guest||!session.idToken)return;
+    const base=prefix(),runId=state.run.id,snapshotId=state.snapshot?.id,selectionGeneration=expectedSelection,planId=state.plan?.id||null,boundModelId=state.plan?.model_id||null,planRevision=state.plan?.revision??null;
+    current=()=>{context.check();return state.run?.id===runId&&state.snapshot?.id===snapshotId&&modelSelectionGeneration===selectionGeneration&&(state.plan?.id||null)===planId&&(state.plan?.model_id||null)===boundModelId&&(state.plan?.revision??null)===planRevision;};
+    const {data}=await context.api.request(`${base}/training-runs/${encodeURIComponent(runId)}`);if(!current()||(data.snapshot_id&&data.snapshot_id!==snapshotId))return;
+    const runContext={...context,check:()=>{if(!current())throw new OperationCancelled();}};
+    const saved=data.model_id?await savedModels(state.snapshot,runContext,state.plan?{boundId:state.plan.model_id||null}:{preferredId:data.model_id}):null;if(!current())return;
+    state.run=data;if(saved){state.model=saved.model;state.models=saved.models;state.modelSelections[state.snapshot.id]=saved.model?.id||null;}if(state.step===2&&!state.busy)render();
+    if(!['succeeded','failed','cancelled','timed_out'].includes(data.state))pollTimer=setTimeout(()=>refreshRun(context,selectionGeneration),5000);
+  }catch(error){if(error instanceof OperationCancelled)return;try{if(!current())return;}catch{return;}state.error=error;if(!state.busy)render();}
 }
 async function downloadPricebook(kind,context=identityContext()) {
   context.check();const book=state.pricebook;
@@ -366,6 +429,7 @@ const actions={
   'open-plan':async element=>perform(t('Loading saved plan…','正在载入保存的方案…'),async context=>{await loadPlan(element.dataset.id,{},context);context.check();state.step=3;}),
   'open-pricebook':async element=>perform(t('Loading saved pricebook…','正在载入价格表…'),async context=>{const {data}=await context.api.request(`${prefix()}/pricebooks/${encodeURIComponent(element.dataset.id)}`);context.check();state.pricebook=data;state.step=5;}),
   'select-row':async element=>loadRow(element.dataset.id),
+  'new-model-draft':async()=>perform(t('Opening the snapshot for a new draft…','正在打开快照以创建新草稿…'),async context=>{await loadSnapshot(state.snapshot.id,context);context.check();state.step=2;}),
   assumptions:async()=>perform(t('Saving example business assumptions…','正在保存示例经营假设…'),async context=>{
     const rules={price_tick:'0.01',maximum_decrease_bps:'500',maximum_increase_bps:'500',minimum_margin:'0.20',max_changed_series:20,maximum_reference_age_weeks:4,inventory_required:false};
     if(state.plan)await saveRevision([],{assumption_mode:'teaching_60pct_v1',rules},context);else await createPlan('teaching_60pct_v1',rules,context);
@@ -387,13 +451,13 @@ const actions={
   'download-pricebook':async()=>perform(t('Preparing authorized download…','正在准备授权下载…'),context=>downloadPricebook('pricebook',context)),
   'download-coverage':async()=>perform(t('Preparing coverage report…','正在准备全目录报告…'),context=>downloadPricebook('coverage',context)),
   train:async element=>perform(t('Requesting model training…','正在请求模型训练…'),async context=>{
-    const {data}=await context.api.request(`${prefix()}/training-runs`,{method:'POST',body:{snapshot_id:state.snapshot.id,pipeline_version:element.dataset.pipeline}});context.check();state.run=data;clearTimeout(pollTimer);pollTimer=setTimeout(()=>refreshRun(context),1500);
+    const {data}=await context.api.request(`${prefix()}/training-runs`,{method:'POST',body:{snapshot_id:state.snapshot.id,pipeline_version:element.dataset.pipeline}});context.check();state.run=data;scheduleRunPoll(context);
   }),
   'reconcile-run':async()=>perform(t('Checking the recorded job state…','正在核对已记录的任务状态…'),async context=>{
     const {data}=await context.api.request(`${prefix()}/training-runs/${encodeURIComponent(state.run.id)}/reconcile`,{method:'POST',body:{}});context.check();state.run=data;await refreshRun(context);
   }),
   'cancel-run':async()=>perform(t('Requesting training cancellation…','正在请求取消训练…'),async context=>{
-    const {data}=await context.api.request(`${prefix()}/training-runs/${encodeURIComponent(state.run.id)}/cancel`,{method:'POST',body:{}});context.check();state.run=data;clearTimeout(pollTimer);pollTimer=setTimeout(()=>refreshRun(context),1500);
+    const {data}=await context.api.request(`${prefix()}/training-runs/${encodeURIComponent(state.run.id)}/cancel`,{method:'POST',body:{}});context.check();state.run=data;scheduleRunPoll(context);
   }),
   'exclude-row':async()=>{
     const reason=document.querySelector('#manual-reason')?.value.trim();if(!reason){document.querySelector('#manual-reason')?.reportValidity();return;}
@@ -416,6 +480,7 @@ app.addEventListener('input',event=>{
   if(input.id.startsWith('rule-') || input.id.startsWith('manual-')) {state.dirty=true;app.querySelectorAll('[data-action=compare],[data-action=submit],[data-action=publish]').forEach(button=>button.disabled=true);announce(t('Unsaved changes. Save a new revision before comparing or submitting.','修改未保存。比较或提交前，请先保存新版本。'));}
 });
 app.addEventListener('change',event=>{
+  if(event.target.id==='model-picker'){modelSelectionGeneration++;clearTimeout(pollTimer);const id=event.target.value;void perform(t('Loading saved model evidence…','正在载入已保存的模型依据…'),async context=>{const saved=await savedModels(state.snapshot,context,{boundId:id||null});context.check();state.model=saved.model;state.models=saved.models;state.modelSelections[state.snapshot.id]=id||null;});return;}
   if(event.target.id==='catalog-filter'){state.filter=event.target.value;render();document.querySelector('#catalog-filter')?.focus();}
   if(event.target.dataset.reviewId){if(event.target.checked)state.selectedReviews.add(event.target.dataset.reviewId);else state.selectedReviews.delete(event.target.dataset.reviewId);render();}
 });

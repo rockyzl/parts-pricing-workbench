@@ -122,10 +122,14 @@ class AzureJobDispatcher:
         job = self.client.jobs.get(c.resource_group, c.job_name).as_dict()
         props = job.get("properties", {})
         deployed = props.get("template", {})
-        # Ignore only absent-vs-empty optional fields; reject extra containers/env/resources.
-        deployed.setdefault("initContainers", [])
+        # Actual 2026-07-01 GET responses serialize unused initContainers/volumes
+        # as null. Normalize only known empty optional collections; keep nonempty
+        # values and all other settings for the exact comparison below.
+        # https://learn.microsoft.com/azure/templates/microsoft.app/2026-07-01/jobs
+        if deployed.get("initContainers") is None: deployed["initContainers"] = []
+        if deployed.get("volumes") in (None, []): deployed.pop("volumes", None)
         for container in deployed.get("containers", []):
-            container.setdefault("args", [])
+            if container.get("args") is None: container["args"] = []
             container["env"] = sorted(container.get("env", []), key=lambda x: x["name"])
         conf = props.get("configuration", {})
         identity = deepcopy(job.get("identity"))
@@ -183,6 +187,16 @@ class TrainingService:
     def get(self, principal, workspace, run_id):
         principal.require(workspace, "read")
         return self._public(self._run(workspace, run_id))
+
+    def list_runs(self, principal, workspace):
+        """Read persisted runs only; never initialize or reconcile control state."""
+        principal.require(workspace, "read")
+        records = self.store.query("control", PARTITION, "run:", limit=10000)
+        if len(records) == 10000:
+            raise WebError(503, "training_inventory_excessive")
+        visible = [self._public(record) for record in records
+                   if record.data.get("workspace_id") == workspace]
+        return sorted(visible, key=lambda run: (run["created_at"], run["id"]), reverse=True)
 
     def _initialize(self):
         # Creation is conditional and never overwrites owner settings or a held slot.

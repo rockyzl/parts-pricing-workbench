@@ -36,8 +36,10 @@ def handle(route):
     if path=='/api/v1/me':return reply({'uid':token,'actor_id':token,'memberships':[{'workspace_id':'ws','role':token,'capabilities':['read','edit','compare','submit'] if token=='analyst' else ['read','review','publish']}]})
     suffix=path.removeprefix('/api/v1/workspaces/ws')
     if suffix=='/snapshots':return reply(paged([snap]))
+    if suffix=='/training-runs':return reply(paged([]))
     if suffix=='/plans':return reply(paged([plan]))
     if suffix=='/pricebooks':return reply(paged([]))
+    if suffix=='/models':return reply(paged([]))
     if suffix=='/snapshots/snap':return reply(snap)
     private_row={**row,'item_id':token+'-private-catalog'}
     if suffix=='/snapshots/snap/catalog':return reply(paged([private_row]))

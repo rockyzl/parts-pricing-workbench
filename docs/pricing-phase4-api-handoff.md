@@ -1,5 +1,11 @@
 # Phase 4 API and private ledger implementation
 
+## Training rediscovery addendum
+
+`GET /api/v1/workspaces/{workspace}/training-runs` now returns persisted runs as `{items,next_cursor,total}` using the existing opaque cursor, default 50 and maximum 100 entries. Results are newest first by `(created_at,id)`. Workspace read authorization precedes the bounded control-partition query; exact workspace filtering occurs before the existing safe run projection. The response retains `id`, `snapshot_id`, `state`, `phase`, `slot_released`, and a completed `model_id` when available. Nonces, private templates, claims, and dispatch intent remain hidden.
+
+This GET never initializes settings/slots, dispatches, reconciles, writes metadata, or fits a model. An empty configured collection returns `[]`; an absent training service returns the existing `503 training_unavailable`. The UI can rediscover an unreleased run after refresh, then explicitly request reconciliation through the unchanged authorized action route. Three focused controller tests and two HTTP tests pass, covering authorization-before-query, cross-workspace filtering, secret exclusion, stable ordering, 102-run pagination, invalid cursors/limits, and unchanged storage/provider state. The previously reviewed Azure empty-template normalization remains unchanged.
+
 Implemented locally 2026-11-18 in `src/pricing_web/`. No cloud resources, provider accounts, deployments or training fits were created by this implementation. Independent review and real Azure/Firebase acceptance remain separate work.
 
 ## Runtime and storage

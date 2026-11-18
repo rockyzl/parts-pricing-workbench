@@ -63,3 +63,50 @@ Executed checks: independent isolated-context/source verification; official regi
 ## Remaining acceptance
 
 Retain the actual image digest and private rendered resource receipts; verify positive and negative managed-identity access before training. Separately freeze and independently approve the first hosted operational execution using the exact image/policy/source/input hashes and existing budgets. Verify actual Firebase identities, hosted comparison timing, provider terminal reconciliation, persistence across restart, separate-user review and complete exports. A successful build or health response alone does not establish those outcomes. Shared grants and remaining subscription credit are unknown; min-zero compute does not remove storage, registry, build or logging costs.
+
+## Focused integration amendment — 2026-11-18 09:50 UTC
+
+**Decision: the administrator credential and provider-template normalization amendments below are approved.** The original image-context hash above is historical: the runtime source changed, and a separate frontend amendment is still in progress. Recompute and review the final allowlisted context before building; this paragraph does not approve an unknown future context or a real training execution.
+
+The deployment owner retained read-only evidence in the private deployment directory: `failed-cli-dual-selection.json` records that the installed Azure CLI rejected `get-access-token` with both tenant and subscription arguments before data access; `provider-template-shape.json` records a real SDK 5.1.0/API 2026-07-01 GET returning unused `initContainers`/`volumes` as null and omitting container args. This reviewer read those bounded records without requesting or printing credentials. Foundation resources were created by the deployment owner under the earlier approval; this reviewer made no cloud changes.
+
+`bootstrap.py` now calls the existing scoped `check(c)` before credential construction, validating the exact configured personal subscription, tenant, state and spending limit. It then supplies only the explicit subscription to `AzureCliCredential`. An independent mocked-bootstrap check proved a failed metadata check prevents credential construction, while the successful path constructs exactly the subscription-bound credential before any seed calls. A second check exercised the installed real Azure Identity class with only its CLI subprocess mocked: the generated command contains the exact `--subscription` argument and no `--tenant`. The command did not run and its returned token was explicitly synthetic. No default account/context change or credential fallback was introduced.
+
+`AzureJobDispatcher.validate_deployment` now treats only the known optional empty forms of `initContainers`, `volumes` and container `args` as equivalent. Nonempty values remain in the comparison, as do unknown keys, changed resources, extra environment values and extra containers. Independently reran `PYTHONPATH=tests/training .venv/bin/python -m unittest test_training.TrainingTests.test_deployment_readback_known_empty_collections_only -v`: **passed**, exercising nine allowed combinations and eight rejected changes. This preserves the fixed-template boundary while accepting the actual provider serialization. No candidate, training parameter, budget, quota, dispatch retry or model-core file was changed.
+
+| Amended file | SHA-256 |
+|---|---|
+| `deploy/bootstrap.py` | `7f57cd9e78e6f4f2f439712c11c2e7f807d32e65508d38df1bef0cc370706a11` |
+| `deploy/README.md` | `c720e0b68f0fcc439a4388c46256a569b6b2dbce5408a5ffd425a60ead951e22` |
+| `src/pricing_web/training.py` | `16979c5e214133da43b9e43eeb2729d68b66b21fb1c701c60bf060b95c8bf9e5` |
+| `tests/training/test_training.py` | `33d04e7307161ede39e4795086e8587b96b067e9e03624ed295ad1a8a8980512` |
+
+This focused review ran no fits, actual CLI token request, cloud write, image build or account operation. Earlier checks of unchanged deployment files remain applicable. Final-context verification and actual hosted acceptance remain pending.
+
+## Final runtime/context amendment — 2026-11-18
+
+**Decision: approved to build the exact final context below and provision the previously reviewed resources using its immutable resulting image.** This replaces the earlier image-context mapping hash; it does not approve additional source edits or the first real training execution.
+
+The new `TrainingService.list_runs` and authenticated GET collection route only read persisted control rows. Authorization precedes the global partition query; results are filtered to the requested workspace and pass through the existing private-field projection. The query is bounded, fails closed at its inventory ceiling, and the HTTP response is paginated/no-store. It neither initializes control state, reconciles nor dispatches jobs. Independently reran the three service and two HTTP discovery tests: **all five passed**, including 102 visible records, foreign-workspace filtering, secret-field exclusion, pagination and rejection before unauthorized reads. These tests make no provider calls or fits.
+
+The separate final [UI/API integration review](phase5-ui-integration-review.md), SHA-256 `14bc94429924f4014c9d7d5c425513a49310c4edbfc1fbc6e07744b71966d457`, approved the operational-model discovery/evidence adapter and the poll guard bound to run, snapshot, model selection, plan, bound model and revision. It records 17 Node checks and an independent Chromium regression with deliberately delayed plan/model responses. This reviewer read the final guard and verified its file hash before freezing the context.
+
+The new isolated directory is `/tmp/pricing-final-context-20261118-vwm4qotx/context`. It contains **43 allowlisted input files / 3,447,416 bytes**, plus `image-manifest.json`. The complete inventory is retained as [deployment-image-source-v1.json](deployment-image-source-v1.json).
+
+- Final source mapping hash: `9eb9b0e50d1971bca25d0ec16a299f339604b3f00ca1c835118ea61804a99827`.
+- Exact manifest file SHA-256: `bd748b0be4a4f7c52d064ef2e0c3ed4760dfeb522e9ee6fb36e755dac165a2c3`.
+- Unchanged lock SHA-256: `764b9fde6730c5b6705f5b75748ca199dc0438fd67ae34beabdb7012981d991d`.
+
+The copied tree exactly matches that inventory plus the manifest, and a second source inventory after copying matches the first. `image_verify.verify(context)` passes. The new `workbench/models.mjs` and the declared synthetic CSV/sidecar are included; hosted tests, all other tests, private configuration, data, bundles, checkpoints and `.git` remain excluded. The targeted credential/private-inventory-identifier check again reports zero findings. No image has been built by this reviewer.
+
+The entire `src/pricing_engine` tree still matches the accepted Phase 3 commit. Actual local runtime remains CPython 3.13.12, numpy 2.4.6, pandas 3.0.3, scipy 1.18.1, scikit-learn 1.9.1, joblib 1.5.3, threadpoolctl 3.6.0 and narwhals 2.29.0. Training policy, parameters and budgets are unchanged.
+
+| Final amended runtime file | SHA-256 |
+|---|---|
+| `src/pricing_web/api.py` | `5b6120ee809c67ecfdd132d2367a352b048b798b2a527bc1a62bbba1662a6baa` |
+| `src/pricing_web/training.py` | `70df13a698724ee3e09b465a1db19d292856e965d99c31d13194b9ba1a5f5f1a` |
+| `workbench/app.mjs` | `b9df81077b7075d942a0b48d29065eeac4b9f943e0061e61c4bd45297892e0bb` |
+| `workbench/models.mjs` | `5f1b83bf141d0591da03ab8415d1e01b13cf69fa524f647ffc73600003ec09e4` |
+| `workbench/ui.mjs` | `17fa2e898b39e6bc1541e9509a72ee0e586f59d1f39ed6231ee60dafaca0a93f` |
+
+Actual image pull/runtime, managed-identity access, real Firebase users, restart persistence, reference comparison, training execution and multi-user publication are still hosted acceptance work. Bind the built image digest and final private deployment configuration to the separate first-run review before any fit.

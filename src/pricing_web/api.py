@@ -402,6 +402,11 @@ def create_app(settings=None, *, store=None, blobs=None, verifier=None, comparer
         if key is None:raise WebError(404,"resource_unavailable")
         return Response(blobs.get(workspace,book[key]),media_type="text/csv",headers={"Content-Disposition":f'attachment; filename="{pricebook_id}-{filename}"'})
 
+    @app.get(prefix+"/training-runs")
+    def training_runs(workspace:str,request:Request,limit:int=Query(default=50,ge=1,le=100),cursor:str|None=Query(default=None,max_length=512)):
+        p=authorized(request,workspace)
+        if training is None:raise WebError(503,"training_unavailable")
+        return page(training.list_runs(p,workspace),limit,cursor)
     @app.post(prefix+"/training-runs",status_code=202)
     def train(workspace:str,body:TrainingCreate,request:Request,idempotency_key:str|None=Header(default=None)):
         p=authorized(request,workspace,"train")

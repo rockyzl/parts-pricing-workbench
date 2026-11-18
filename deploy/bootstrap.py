@@ -7,7 +7,7 @@ from pathlib import Path
 import argparse
 import json
 
-from provision import load_config, write_private
+from provision import check, load_config, write_private
 
 
 def main():
@@ -22,7 +22,12 @@ def main():
     for path in (args.members, args.output):
         if path.resolve().is_relative_to(root): raise ValueError("Private inputs/output must stay outside the repository")
     if args.members.stat().st_mode & 0o077: raise ValueError("Membership input requires mode 0600")
-    c = load_config(args.config); members = json.loads(args.members.read_text())
+    c = load_config(args.config)
+    # The installed az CLI rejects get-access-token with BOTH --tenant and
+    # --subscription. Validate the exact tenant via the scoped account read, then
+    # request tokens with the explicit subscription alone; never use CLI default.
+    check(c)
+    members = json.loads(args.members.read_text())
     if len(members["users"]) != 2 or len({m["uid"] for m in members["users"]}) != 2:
         raise ValueError("Exactly two distinct private UIDs are required")
     if {u["role"] for u in members["users"]} != {"analyst", "reviewer"}:
@@ -32,7 +37,7 @@ def main():
     from pricing_web.artifacts import AzureBlobStore
     from pricing_web.reference import provision_membership, seed_reference
     from pricing_web.auth import identity_key
-    credential = AzureCliCredential(subscription=c["subscription_id"], tenant_id=c["tenant_id"])
+    credential = AzureCliCredential(subscription=c["subscription_id"])
     store = AzureStore(f'https://{c["storage"]}.table.core.windows.net/', credential)
     blobs = AzureBlobStore(f'https://{c["storage"]}.blob.core.windows.net/', c["inputs"], credential)
     issuer = "https://securetoken.google.com/" + c["firebase_project"]
