@@ -1,0 +1,27 @@
+# Defense in depth. deploy/build_context.py supplies an isolated allowlisted context.
+*
+!Dockerfile
+!.dockerignore
+!pyproject.toml
+!uv.lock
+!image-manifest.json
+!src/
+!src/pricing_engine/
+!src/pricing_web/
+!src/**/*.py
+!workbench/
+!workbench/index.html
+!workbench/style.css
+!workbench/*.mjs
+!workbench/public-samples/
+!workbench/public-samples/*.json
+!workbench/downloads/
+!workbench/downloads/*.csv
+!workbench/downloads/*.json
+!deploy/
+!deploy/image_verify.py
+**/__pycache__/
+**/*.pyc
+**/.env*
+**/*private*
+**/*credential*

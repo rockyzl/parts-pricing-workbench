@@ -1,0 +1,19 @@
+{
+  "schema": "synthetic-weekly-teaching-v1",
+  "synthetic": true,
+  "observed_business_data": false,
+  "purpose": "Try upload, bounded training and independent price review; no scientific performance claim",
+  "rows": 200,
+  "series": 2,
+  "weeks": [
+    1,
+    100
+  ],
+  "snapshot_cutoff": 100,
+  "currency": "USD",
+  "currency_notice": "Invented USD-denominated test values; not Microsoft OJ data",
+  "source_id": "synthetic-teaching-v1",
+  "sha256": "f6ff67487e0d292de3c26d6832d477cd98f600362613757865c1405106710e6b",
+  "bytes": 24469,
+  "generator": "deploy/make_teaching_fixture.py"
+}

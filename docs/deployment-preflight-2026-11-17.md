@@ -52,7 +52,7 @@ Easy Auth is an alternative, but a reusable app registration and personal-accoun
 
 Official Consumption grants are shared **per subscription**: 180,000 vCPU-seconds, 360,000 GiB-seconds and 2 million HTTP requests/month. Scale-to-zero eliminates replica compute charges while zero replicas run, not all storage/logging/network costs. Jobs use active consumption rates.
 
-The official Retail Prices API returned Central US list rates of $0.000024/vCPU-second, $0.000003/GiB-second and $0.40/million requests. At these list rates, an illustrative 1-vCPU/2-GiB worker lasting 600 seconds costs **$0.018 compute before grants**, excluding image pull/startup time and other services. This is not a measured runtime or invoice estimate for a fitted model.
+The official Retail Prices API returned Central US list rates of $0.000024/vCPU-second, $0.000003/GiB-second and $0.40/million requests. Updated for the selected deployment size on 2026-11-18: an illustrative **2-vCPU/4-GiB** worker lasting 600 seconds costs **$0.036 compute before grants**, excluding image pull/startup time and other services. This is not a measured runtime or invoice estimate for a fitted model.
 
 The existing $50 development credit is shared with unrelated resources, including PostgreSQL/ACR/AI. Its exact remaining balance and renewal date were not obtained. Retain the subscription spending limit; no plan assumes a fresh $50 is available. Avoid a new database server, dedicated profile, private endpoint, paid logging workspace or paid registry. Storage and requests remain metered; record actual incremental usage after deployment.
 

@@ -1,0 +1,56 @@
+"""Owner-run private membership/reference seed; no account creation or email sending.
+
+The invoking operator needs data roles at only the three indicated seed scopes.
+Production API/worker keep their separate managed-identity permissions.
+"""
+from pathlib import Path
+import argparse
+import json
+
+from provision import load_config, write_private
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--config", type=Path, required=True)
+    parser.add_argument("--members", type=Path, required=True)
+    parser.add_argument("--bundle", type=Path, required=True)
+    parser.add_argument("--promotion", type=Path, required=True)
+    parser.add_argument("--output", type=Path, required=True)
+    args = parser.parse_args()
+    root = Path(__file__).resolve().parents[1]
+    for path in (args.members, args.output):
+        if path.resolve().is_relative_to(root): raise ValueError("Private inputs/output must stay outside the repository")
+    if args.members.stat().st_mode & 0o077: raise ValueError("Membership input requires mode 0600")
+    c = load_config(args.config); members = json.loads(args.members.read_text())
+    if len(members["users"]) != 2 or len({m["uid"] for m in members["users"]}) != 2:
+        raise ValueError("Exactly two distinct private UIDs are required")
+    if {u["role"] for u in members["users"]} != {"analyst", "reviewer"}:
+        raise ValueError("A distinct analyst and reviewer are required")
+    from azure.identity import AzureCliCredential
+    from pricing_web.store import AzureStore
+    from pricing_web.artifacts import AzureBlobStore
+    from pricing_web.reference import provision_membership, seed_reference
+    from pricing_web.auth import identity_key
+    credential = AzureCliCredential(subscription=c["subscription_id"], tenant_id=c["tenant_id"])
+    store = AzureStore(f'https://{c["storage"]}.table.core.windows.net/', credential)
+    blobs = AzureBlobStore(f'https://{c["storage"]}.blob.core.windows.net/', c["inputs"], credential)
+    issuer = "https://securetoken.google.com/" + c["firebase_project"]
+    results = []
+    for member in members["users"]:
+        caps = ["read", "upload", "edit", "train", "compare", "submit"] if member["role"] == "analyst" else ["read", "review", "publish"]
+        old = store.get("identity", identity_key(issuer, member["uid"]), "membership")
+        if old:
+            current = old.data.get("memberships", {}).get(members["workspace"])
+            expected = {"role": member["role"], "capabilities": sorted(caps), "enabled": True}
+            if current != expected: raise ValueError("Existing membership differs; explicit reviewed update required")
+        else:
+            provision_membership(store, issuer, member["uid"], members["workspace"], caps, member["role"])
+        results.append({"role": member["role"], "present": True})
+    seed = seed_reference(store, blobs, members["workspace"], args.bundle, args.promotion, "owner-reference-seed-v1")
+    write_private(args.output, {"membership_count": len(results), "memberships": results, "reference": seed,
+                               "accounts_created": False, "training_started": False})
+    print(json.dumps({"membership_count": len(results), "reference_seeded": True}))
+
+
+if __name__ == "__main__": main()

@@ -1,0 +1,20 @@
+{
+  "subscription_id": "REPLACE-WITH-PERSONAL-SUBSCRIPTION-UUID",
+  "tenant_id": "REPLACE-WITH-PERSONAL-TENANT-UUID",
+  "expected_subscription_name": "Visual Studio Professional Subscription",
+  "location": "centralus",
+  "resource_group": "REPLACE-WITH-EXISTING-PERSONAL-RG",
+  "environment": "REPLACE-WITH-EXISTING-ENVIRONMENT",
+  "storage": "REPLACE-WITH-EXISTING-STORAGE",
+  "registry": "REPLACE-WITH-EXISTING-REGISTRY",
+  "api_name": "pricing-workbench-api",
+  "job_name": "pricing-workbench-training",
+  "api_identity": "pricing-workbench-api-identity",
+  "worker_identity": "pricing-workbench-worker-identity",
+  "inputs": "pricing-v2-inputs",
+  "results": "pricing-v2-results",
+  "plans": "pricing-v2-plans",
+  "firebase_project": "REPLACE-WITH-APPROVED-FIREBASE-PROJECT",
+  "firebase_api_key": "REPLACE-WITH-PUBLIC-FIREBASE-WEB-KEY",
+  "firebase_auth_domain": "REPLACE-WITH-FIREBASE-AUTH-DOMAIN"
+}
