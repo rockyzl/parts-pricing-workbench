@@ -1,0 +1,14 @@
+{
+  "url": "https://rockyzl.github.io/parts-pricing-workbench/",
+  "repo": "https://github.com/rockyzl/parts-pricing-workbench",
+  "code_commit": "09bb98770702bf922d7e2b339f1b71834e8443c5",
+  "workflow": "https://github.com/rockyzl/parts-pricing-workbench/actions/runs/44237430008",
+  "engine_sha256": "e4eae3a2329f411e6f8c39da1ee608e8533865ec10a10b8407e631f97ec9d584",
+  "public_engine_matches_local": true,
+  "public_cases_tested": 12,
+  "rule_tests_passed": 8,
+  "new_paid_cloud_resources": 0,
+  "llm_calls": 0,
+  "models_trained": 0,
+  "browser_report": "docs/browser-verification.json"
+}
