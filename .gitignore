@@ -7,3 +7,4 @@ __pycache__/
 data/model-runs/
 data/model-reviews/
 data/model-lineages/
+data/bundles/
