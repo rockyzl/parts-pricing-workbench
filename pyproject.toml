@@ -1,0 +1,16 @@
+[build-system]
+requires = ["hatchling==1.27.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pricing-engine"
+version = "0.1.0"
+description = "Auditable weekly pricing research data foundation"
+requires-python = ">=3.12,<3.14"
+dependencies = ["pandas==3.0.3", "numpy==2.4.6"]
+
+[project.scripts]
+pricing-data = "pricing_engine.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pricing_engine"]

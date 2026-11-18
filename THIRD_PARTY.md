@@ -22,4 +22,12 @@ No source code from these repositories is bundled in this first version. The bro
 - [Choice-Learn](https://github.com/artefactory/choice-learn), MIT, inspected at `9af332f9eea930d8824e67f3cbf7d194b62f7455`: possible later treatment of substitution and product-choice data.
 - [Price Elasticity Optimization](https://github.com/msgupta/price-elasticity-optimization), MIT, inspected at `faa2b6ca49562a257cc5d5c8deb22567b5fc4e91`: reviewed a compact pooling/optimization example. It uses synthetic data. A reproduced inconsistent-bound case returned £121.20 when the declared ceiling was £112; our test rejects that case. The published upstream business claims were not verified.
 
-The browser runs standard JavaScript with no runtime library/CDN, paid API or LLM. Python/pandas/openpyxl are used only to prepare the historical aggregate data.
+The browser runs standard JavaScript with no runtime library/CDN, paid API or LLM. The V1 preparation uses Python/pandas/openpyxl.
+
+## V2 data foundation
+
+The V2 importer reads Microsoft's publicly distributed [OJ CSV at a pinned commit](https://github.com/Azure/cortana-intelligence-price-analytics/blob/5ea231ff4f9feccfed5b5ea78f10428a6fb0fe3b/assets/oj_raw.csv). Microsoft points to the [bayesm orangeJuice documentation](https://search.r-project.org/CRAN/refmans/bayesm/html/orangeJuice.html), which cites Alan L. Montgomery (1997), “Creating Micro-Marketing Pricing Strategies Using Supermarket Scanner Data,” Marketing Science 16(4), 315–337. The repository's MIT code license does not by itself establish every upstream data redistribution right. Raw and detailed derived data stay local; download instructions and a checksum enable personal study without mirroring the raw dataset here.
+
+Microsoft's demo cost and calendar transformations are not used. The data pipeline preserves source units, week indices and feature advertising. Exact package/currency mapping remains unverified for this extract. See the [Phase 1 audit](docs/pricing-phase1-handoff.md).
+
+Python runtime dependencies are pandas 3.0.3 and NumPy 2.4.6 (BSD-3-Clause), with Hatchling 1.27.0 (MIT) for packaging. Full resolved runtime dependency versions/hashes are in `uv.lock`. No trained model or third-party pretrained output is included.

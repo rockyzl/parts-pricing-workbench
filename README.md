@@ -52,6 +52,8 @@ python3 -m http.server 8791 --directory web
 
 Open http://localhost:8791. The browser executes `web/engine.mjs` on every calculation; results are not prerecorded.
 
+V2 development now has a separate Python weekly-data foundation. The public page above remains V1. See the [Phase 1 commands and audit](docs/pricing-phase1-handoff.md) and [validated upload contract](docs/data-contracts/weekly-pricing-v1.md). V2 model training and the authenticated public workflow are later phases.
+
 To regenerate the data, install `requirements-data.txt`, download the official [UCI ZIP](https://archive.ics.uci.edu/static/public/352/online+retail.zip) as `data/raw/online-retail.zip`, and run:
 
 ```bash
