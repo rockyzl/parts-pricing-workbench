@@ -1,0 +1,63 @@
+{
+  "verified_at": "2026-11-18T04:25:46.173046+00:00",
+  "url": "http://127.0.0.1:8791",
+  "browser": "159.0.8154.6",
+  "cases": [
+    {
+      "sku": "10124A",
+      "status": "review_required"
+    },
+    {
+      "sku": "10124G",
+      "status": "review_required"
+    },
+    {
+      "sku": "15030",
+      "status": "review_required"
+    },
+    {
+      "sku": "15056p",
+      "status": "review_required"
+    },
+    {
+      "sku": "10080",
+      "status": "review_required"
+    },
+    {
+      "sku": "10135",
+      "status": "review_required"
+    },
+    {
+      "sku": "11001",
+      "status": "review_required"
+    },
+    {
+      "sku": "15034",
+      "status": "review_required"
+    },
+    {
+      "sku": "10002",
+      "status": "insufficient_sales"
+    },
+    {
+      "sku": "10123C",
+      "status": "insufficient_sales"
+    },
+    {
+      "sku": "10120",
+      "status": "review_required"
+    },
+    {
+      "sku": "10125",
+      "status": "review_required"
+    }
+  ],
+  "actual_calculation": true,
+  "stale_result_cleared": true,
+  "constraint_conflict": true,
+  "no_sales_guard": true,
+  "review_and_download": true,
+  "en_zh_switch": true,
+  "mobile_overflow": false,
+  "page_errors": []
+}

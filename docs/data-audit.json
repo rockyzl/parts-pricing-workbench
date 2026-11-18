@@ -1,0 +1,16 @@
+{
+  "source_rows": 541909,
+  "filter_counts_cumulative": {
+    "uk_only": 495478,
+    "positive_quantity": 486286,
+    "positive_price": 485123,
+    "not_cancellation": 485123,
+    "merchandise_code": 483650,
+    "at_or_before_snapshot": 449845
+  },
+  "eligible_products": 3343,
+  "published_cases": 12,
+  "customer_fields_published": [],
+  "models_trained": 0,
+  "catalog_sha256": "5ce7b75129b40d1ef127288980e4ab426e4ced0f4d08d194489ac1b74a328d01"
+}

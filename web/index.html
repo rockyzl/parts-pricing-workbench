@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Parts Pricing Workbench · Lu Zhang</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="#">LU ZHANG <span> / PRICING WORKBENCH</span></a>
+      <nav>
+        <a
+          href="https://github.com/rockyzl/parts-pricing-workbench"
+          target="_blank"
+          rel="noopener"
+          >GitHub ↗</a
+        ><button id="language" type="button">中文讲解</button>
+      </nav>
+    </header>
+    <main>
+      <div class="intro">
+        <p
+          class="eyebrow"
+          data-en="INDEPENDENT LEARNING PROTOTYPE"
+          data-zh="独立学习原型"
+        >
+          INDEPENDENT LEARNING PROTOTYPE
+        </p>
+        <h1
+          data-en="How do you arrive at one price?"
+          data-zh="一个价格，究竟是怎样算出来的？"
+        >
+          How do you arrive at one price?
+        </h1>
+        <p
+          data-en="Inspect a product. Set the limits. Compare prices and see what needs human judgment."
+          data-zh="先看商品，再设限制，最后比较价格。每一步都能看到依据。"
+        >
+          Inspect a product. Set the limits. Compare prices and see what needs
+          human judgment.
+        </p>
+      </div>
+      <div class="scope">
+        <strong
+          data-en="Real transactions. Explicit assumptions."
+          data-zh="交易记录是真实的；经营参数由你假设。"
+          >Real transactions. Explicit assumptions.</strong
+        ><span
+          data-en="Historical UK gift retail data illustrates the workflow. This is not vehicle-parts data. Cost and elasticity below are scenarios, not learned facts."
+          data-zh="用英国礼品零售的历史数据演示流程，并非汽车零件数据。下面的成本与价格敏感度是情景假设，没有训练弹性模型。"
+          >Historical UK gift retail data illustrates the workflow. This is not
+          vehicle-parts data. Cost and elasticity below are scenarios, not
+          learned facts.</span
+        >
+      </div>
+      <div id="loading" role="status">
+        Loading the public transaction snapshot…
+      </div>
+      <div class="workbench" id="workbench" hidden>
+        <section class="panel record">
+          <p
+            class="step"
+            data-en="1 / OBSERVED RECORD"
+            data-zh="1 / 先看真实记录"
+          >
+            1 / OBSERVED RECORD
+          </p>
+          <h2 data-en="Choose a product" data-zh="选择一个商品">
+            Choose a product
+          </h2>
+          <label for="product" data-en="Historical product" data-zh="历史商品"
+            >Historical product</label
+          ><select id="product"></select>
+          <h3 id="product-name"></h3>
+          <div class="badge" id="segment"></div>
+          <div class="facts">
+            <div>
+              <span data-en="Last transaction price" data-zh="最后一次成交单价"
+                >Last transaction price</span
+              ><strong id="base-price"></strong>
+            </div>
+            <div>
+              <span
+                data-en="Weeks with sales / last 8"
+                data-zh="最近 8 周中有销量的周数"
+                >Weeks with sales / last 8</span
+              ><strong id="active-weeks"></strong>
+            </div>
+          </div>
+          <p
+            class="chart-label"
+            data-en="Recorded units / 26 weeks"
+            data-zh="26 周每周记录的销量"
+          >
+            Recorded units / 26 weeks
+          </p>
+          <div id="history" class="history" role="img"></div>
+          <div class="chart-dates">
+            <span>2011-05-30</span><span>2011-11-21</span>
+          </div>
+          <p class="small" id="record-note"></p>
+          <details>
+            <summary
+              data-en="Where did this record come from?"
+              data-zh="这条数据来自哪里？"
+            >
+              Where did this record come from?
+            </summary>
+            <p
+              data-en="UCI Online Retail, 2010–2011. Positive UK merchandise sales through November 27, 2011; cancellation and non-product records excluded. No customer identifiers are included."
+              data-zh="UCI Online Retail，2010–2011 年英国零售交易。这里只展示截至 2011-11-27 的英国商品正向销售，排除了取消和非商品记录，不包含客户编号。"
+            >
+              UCI Online Retail, 2010–2011. Positive UK merchandise sales
+              through November 27, 2011; cancellation and non-product records
+              excluded. No customer identifiers are included.
+            </p>
+            <p
+              data-en="An empty week means no recorded sale. It does not tell us whether the item was in stock."
+              data-zh="空白的一周表示没有记录到销售，不能说明当时是否有库存。"
+            >
+              An empty week means no recorded sale. It does not tell us whether
+              the item was in stock.
+            </p>
+            <a
+              href="https://archive.ics.uci.edu/dataset/352/online+retail"
+              target="_blank"
+              rel="noopener"
+              data-en="Open the official dataset ↗"
+              data-zh="打开官方数据集 ↗"
+              >Open the official dataset ↗</a
+            >
+          </details>
+        </section>
+        <section class="panel inputs">
+          <p
+            class="step"
+            data-en="2 / BUSINESS ASSUMPTIONS"
+            data-zh="2 / 设置经营条件"
+          >
+            2 / BUSINESS ASSUMPTIONS
+          </p>
+          <h2 data-en="Set your boundaries" data-zh="划定允许的价格范围">
+            Set your boundaries
+          </h2>
+          <p
+            class="small"
+            data-en="Editable scenario inputs. These fields are not supplied by the dataset."
+            data-zh="这些是可修改的情景输入，原始数据没有提供。"
+          >
+            Editable scenario inputs. These fields are not supplied by the
+            dataset.
+          </p>
+          <form id="pricing-form">
+            <label
+              for="cost"
+              data-en="Assumed unit cost · £"
+              data-zh="假设单位成本 · 英镑"
+              >Assumed unit cost · £</label
+            ><input id="cost" type="number" min="0" step="0.01" required />
+            <p
+              class="hint"
+              data-en="Starts at 60% of the last price, as an illustration."
+              data-zh="初始按最后成交价的 60% 设置，仅用于演示。"
+            >
+              Starts at 60% of the last price, as an illustration.
+            </p>
+            <div class="two-fields">
+              <div>
+                <label
+                  for="margin"
+                  data-en="Minimum gross margin %"
+                  data-zh="最低毛利率 %"
+                  >Minimum gross margin %</label
+                ><input
+                  id="margin"
+                  type="number"
+                  min="0"
+                  max="95"
+                  step="1"
+                  value="20"
+                  required
+                />
+              </div>
+              <div>
+                <label
+                  for="change"
+                  data-en="Maximum price change ±%"
+                  data-zh="最多涨跌 ±%"
+                  >Maximum price change ±%</label
+                ><input
+                  id="change"
+                  type="number"
+                  min="0"
+                  max="50"
+                  step="1"
+                  value="12"
+                  required
+                />
+              </div>
+            </div>
+            <label class="check"
+              ><input id="use-market" type="checkbox" /><span
+                data-en="Apply a comparable-market price ceiling"
+                data-zh="加一条：可比市场价格上限"
+                >Apply a comparable-market price ceiling</span
+              ></label
+            >
+            <div id="market-field" hidden>
+              <label
+                for="market"
+                data-en="Assumed price ceiling · £"
+                data-zh="假设价格上限 · 英镑"
+                >Assumed price ceiling · £</label
+              ><input id="market" type="number" min="0.01" step="0.01" />
+              <p
+                class="hint"
+                data-en="An optional hard rule for this exercise, not a scraped competitor quote."
+                data-zh="本练习把它作为硬限制；它不是网上抓取的真实竞品报价。"
+              >
+                An optional hard rule for this exercise, not a scraped
+                competitor quote.
+              </p>
+            </div>
+            <details class="assumptions">
+              <summary
+                data-en="How does a sparse item borrow information?"
+                data-zh="低销量商品怎样借用同类信息？"
+              >
+                How does a sparse item borrow information?
+              </summary>
+              <p
+                data-en="Teaching example: combine a hypothetical item signal with a family assumption. Fewer selling weeks means greater weight on the family. No category model has been fitted."
+                data-zh="教学示例：把假设的单品信号和同类商品经验合起来。有销量的周数越少，就越依赖同类经验。这里没有训练类别模型。"
+              >
+                Teaching example: combine a hypothetical item signal with a
+                family assumption. Fewer selling weeks means greater weight on
+                the family. No category model has been fitted.
+              </p>
+              <label
+                for="family-e"
+                data-en="Family elasticity assumption"
+                data-zh="假设同类商品的价格弹性"
+                >Family elasticity assumption</label
+              ><input
+                id="family-e"
+                type="number"
+                max="-0.1"
+                min="-10"
+                step="0.1"
+                value="-1.5"
+                required
+              /><label
+                for="sku-e"
+                data-en="Hypothetical item elasticity signal"
+                data-zh="假设这个商品自身的弹性信号"
+                >Hypothetical item elasticity signal</label
+              ><input
+                id="sku-e"
+                type="number"
+                max="-0.1"
+                min="-10"
+                step="0.1"
+                value="-2.2"
+                required
+              />
+              <p
+                class="hint"
+                data-en="−1.5 means roughly 1.5% fewer units for a small 1% price increase, under the assumed demand curve."
+                data-zh="−1.5 的意思是：按假设的需求曲线，价格小幅涨 1%，销量约降 1.5%。"
+              >
+                −1.5 means roughly 1.5% fewer units for a small 1% price
+                increase, under the assumed demand curve.
+              </p>
+              <p class="small" id="pool-note"></p>
+            </details>
+            <button
+              class="primary"
+              type="submit"
+              id="calculate"
+              data-en="Compare candidate prices →"
+              data-zh="比较候选价格 →"
+            >
+              Compare candidate prices →</button
+            ><button
+              class="text-button"
+              id="try-conflict"
+              type="button"
+              data-en="Try a cost / price-limit conflict"
+              data-zh="试一下：成本和售价上限冲突"
+            >
+              Try a cost / price-limit conflict
+            </button>
+          </form>
+        </section>
+        <section class="panel result">
+          <p
+            class="step"
+            data-en="3 / PRICE DECISION"
+            data-zh="3 / 得到决策结果"
+          >
+            3 / PRICE DECISION
+          </p>
+          <h2 data-en="See the trade-off" data-zh="看看最后怎么权衡">
+            See the trade-off
+          </h2>
+          <div id="decision" aria-live="polite">
+            <p
+              class="empty"
+              data-en="Set the inputs, then compare prices. Nothing is published to a store."
+              data-zh="设置条件，再点击比较价格。这里不会向任何商店发布价格。"
+            >
+              Set the inputs, then compare prices. Nothing is published to a
+              store.
+            </p>
+          </div>
+          <div id="review" hidden>
+            <label
+              for="review-note"
+              data-en="Your review note"
+              data-zh="你的审核意见"
+              >Your review note</label
+            ><textarea id="review-note" rows="2" placeholder=""></textarea
+            ><button
+              id="save-review"
+              class="secondary"
+              type="button"
+              data-en="Save a local review"
+              data-zh="保存本地审核记录"
+            >
+              Save a local review</button
+            ><button
+              id="download"
+              class="text-button"
+              type="button"
+              data-en="Download calculation record"
+              data-zh="下载本次计算记录"
+            >
+              Download calculation record
+            </button>
+            <p
+              class="hint"
+              data-en="Stored only in this browser. This is a review simulation, not an authenticated approval system."
+              data-zh="只保存在当前浏览器。这里模拟审核过程，没有接入企业身份与正式审批系统。"
+            >
+              Stored only in this browser. This is a review simulation, not an
+              authenticated approval system.
+            </p>
+            <p id="review-status" role="status"></p>
+          </div>
+        </section>
+      </div>
+      <section class="explain">
+        <h2
+          data-en="What this engine does — in plain language"
+          data-zh="用大白话说，这个引擎做了什么"
+        >
+          What this engine does — in plain language
+        </h2>
+        <div class="explain-grid">
+          <article>
+            <h3
+              data-en="First: rule out impossible prices"
+              data-zh="先排除不能接受的价格"
+            >
+              First: rule out impossible prices
+            </h3>
+            <p
+              data-en="Cost and minimum margin set a lower limit. Change limits and an optional market ceiling set the rest of the range. Conflicting rules produce a review request, never a hidden override."
+              data-zh="成本和最低毛利率划出底线；涨跌幅和市场上限划出另一边。规则冲突时直接提示，不能偷偷越过规则报个价。"
+            >
+              Cost and minimum margin set a lower limit. Change limits and an
+              optional market ceiling set the rest of the range. Conflicting
+              rules produce a review request, never a hidden override.
+            </p>
+          </article>
+          <article>
+            <h3
+              data-en="Then: compare what could happen"
+              data-zh="再比较：不同价格可能怎样"
+            >
+              Then: compare what could happen
+            </h3>
+            <p
+              data-en="For each candidate price, calculate sales and contribution profit under three assumed sensitivities. Select the candidate with the highest worst-case profit across those three scenarios. This is not a statistical confidence interval."
+              data-zh="每个候选价都按三种价格敏感度假设计算销量与毛利。选出“三种假设中最差毛利”最高的候选价。这是情景比较，不是统计置信区间。"
+            >
+              For each candidate price, calculate sales and contribution profit
+              under three assumed sensitivities. Select the candidate with the
+              highest worst-case profit across those three scenarios. This is
+              not a statistical confidence interval.
+            </p>
+          </article>
+          <article>
+            <h3
+              data-en="Finally: review and test"
+              data-zh="最后：审核，并通过实验验证"
+            >
+              Finally: review and test
+            </h3>
+            <p
+              data-en="A calculated proposal is not proven business value. A real rollout needs verified costs, estimated price response, customer and dealer constraints, and a controlled test. This version uses explicit scenarios and no LLM."
+              data-zh="算出来的候选价还不是已验证的收益。真实上线还需要核实成本、估计价格响应、补齐客户与经销商约束，再做对照实验。本版按明确情景计算，没有调用大语言模型。"
+            >
+              A calculated proposal is not proven business value. A real rollout
+              needs verified costs, estimated price response, customer and
+              dealer constraints, and a controlled test. This version uses
+              explicit scenarios and no LLM.
+            </p>
+          </article>
+        </div>
+      </section>
+      <details class="references">
+        <summary
+          data-en="Open-source references and next steps"
+          data-zh="开源参考与后续扩展"
+        >
+          Open-source references and next steps
+        </summary>
+        <p>
+          <a
+            href="https://github.com/Azure/cortana-intelligence-price-analytics"
+            >Microsoft Interactive Price Analytics</a
+          >
+          ·
+          <a href="https://github.com/Nixtla/statsforecast">StatsForecast</a> ·
+          <a href="https://github.com/google/or-tools">OR-Tools</a> ·
+          <a href="https://github.com/artefactory/choice-learn">Choice-Learn</a>
+        </p>
+        <p
+          data-en="These are researched references, not installed integrations. Next: governed time-based model evaluation, better sparse-data estimates, then product-substitution and portfolio constraints."
+          data-zh="以上是调研参考，不代表本版已经集成这些工具。后续依次加入按时间切分的模型评估、更可靠的稀疏数据估计，以及商品替代和组合约束。"
+        >
+          These are researched references, not installed integrations. Next:
+          governed time-based model evaluation, better sparse-data estimates,
+          then product-substitution and portfolio constraints.
+        </p>
+      </details>
+      <footer>
+        Lu Zhang · Independent prototype · UCI Online Retail / Chen (2015), CC
+        BY 4.0 · <a href="https://doi.org/10.24432/C5BW33">Dataset citation</a>
+      </footer>
+    </main>
+    <script type="module" src="app.mjs"></script>
+  </body>
+</html>

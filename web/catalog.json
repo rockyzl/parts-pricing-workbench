@@ -1,0 +1,1420 @@
+{
+  "source": {
+    "url": "https://archive.ics.uci.edu/static/public/352/online+retail.zip",
+    "dataset_page": "https://archive.ics.uci.edu/dataset/352/online+retail",
+    "doi": "https://doi.org/10.24432/C5BW33",
+    "license": "CC BY 4.0",
+    "downloaded_at": "2026-11-18T04:17:58.622554+00:00",
+    "bytes": 23715478,
+    "sha256": "f5385cbb54bbebf7196389109c6b0621faab0c304e3702548165e71c84aede8b"
+  },
+  "citation": "Chen, D. (2015). Online Retail. UCI Machine Learning Repository. DOI: 10.24432/C5BW33.",
+  "currency": "GBP",
+  "as_of": "2011-11-27",
+  "source_rows": 541909,
+  "clean_rows": 449845,
+  "eligible_products": 3343,
+  "selection": "First stock codes in sparse (4), regular (4), no recent sales (2), occasional (2) groups; teaching examples, not an evaluation sample.",
+  "zero_meaning": "No recorded positive sales; stock availability and latent demand are unknown.",
+  "missing_fields": [
+    "unit cost",
+    "competitor quote",
+    "inventory",
+    "causal elasticity",
+    "parts fitment"
+  ],
+  "products": [
+    {
+      "sku": "10124A",
+      "description": "SPOTS ON RED BOOKCOVER TAPE",
+      "last_observed_price": 0.42,
+      "last_sale_date": "2011-11-06",
+      "recorded_units_per_week": 0.5,
+      "active_weeks_last_8": 1,
+      "unique_transaction_prices_last_26": 1,
+      "segment": "sparse",
+      "history": [
+        {
+          "week": "2011-05-30",
+          "units": 0
+        },
+        {
+          "week": "2011-06-06",
+          "units": 0
+        },
+        {
+          "week": "2011-06-13",
+          "units": 0
+        },
+        {
+          "week": "2011-06-20",
+          "units": 0
+        },
+        {
+          "week": "2011-06-27",
+          "units": 0
+        },
+        {
+          "week": "2011-07-04",
+          "units": 0
+        },
+        {
+          "week": "2011-07-11",
+          "units": 0
+        },
+        {
+          "week": "2011-07-18",
+          "units": 0
+        },
+        {
+          "week": "2011-07-25",
+          "units": 0
+        },
+        {
+          "week": "2011-08-01",
+          "units": 0
+        },
+        {
+          "week": "2011-08-08",
+          "units": 0
+        },
+        {
+          "week": "2011-08-15",
+          "units": 0
+        },
+        {
+          "week": "2011-08-22",
+          "units": 0
+        },
+        {
+          "week": "2011-08-29",
+          "units": 0
+        },
+        {
+          "week": "2011-09-05",
+          "units": 0
+        },
+        {
+          "week": "2011-09-12",
+          "units": 0
+        },
+        {
+          "week": "2011-09-19",
+          "units": 0
+        },
+        {
+          "week": "2011-09-26",
+          "units": 0
+        },
+        {
+          "week": "2011-10-03",
+          "units": 0
+        },
+        {
+          "week": "2011-10-10",
+          "units": 0
+        },
+        {
+          "week": "2011-10-17",
+          "units": 0
+        },
+        {
+          "week": "2011-10-24",
+          "units": 0
+        },
+        {
+          "week": "2011-10-31",
+          "units": 4
+        },
+        {
+          "week": "2011-11-07",
+          "units": 0
+        },
+        {
+          "week": "2011-11-14",
+          "units": 0
+        },
+        {
+          "week": "2011-11-21",
+          "units": 0
+        }
+      ]
+    },
+    {
+      "sku": "10124G",
+      "description": "ARMY CAMO BOOKCOVER TAPE",
+      "last_observed_price": 0.42,
+      "last_sale_date": "2011-11-06",
+      "recorded_units_per_week": 0.5,
+      "active_weeks_last_8": 1,
+      "unique_transaction_prices_last_26": 1,
+      "segment": "sparse",
+      "history": [
+        {
+          "week": "2011-05-30",
+          "units": 0
+        },
+        {
+          "week": "2011-06-06",
+          "units": 0
+        },
+        {
+          "week": "2011-06-13",
+          "units": 0
+        },
+        {
+          "week": "2011-06-20",
+          "units": 0
+        },
+        {
+          "week": "2011-06-27",
+          "units": 0
+        },
+        {
+          "week": "2011-07-04",
+          "units": 0
+        },
+        {
+          "week": "2011-07-11",
+          "units": 0
+        },
+        {
+          "week": "2011-07-18",
+          "units": 0
+        },
+        {
+          "week": "2011-07-25",
+          "units": 0
+        },
+        {
+          "week": "2011-08-01",
+          "units": 0
+        },
+        {
+          "week": "2011-08-08",
+          "units": 0
+        },
+        {
+          "week": "2011-08-15",
+          "units": 0
+        },
+        {
+          "week": "2011-08-22",
+          "units": 0
+        },
+        {
+          "week": "2011-08-29",
+          "units": 0
+        },
+        {
+          "week": "2011-09-05",
+          "units": 0
+        },
+        {
+          "week": "2011-09-12",
+          "units": 0
+        },
+        {
+          "week": "2011-09-19",
+          "units": 0
+        },
+        {
+          "week": "2011-09-26",
+          "units": 4
+        },
+        {
+          "week": "2011-10-03",
+          "units": 0
+        },
+        {
+          "week": "2011-10-10",
+          "units": 0
+        },
+        {
+          "week": "2011-10-17",
+          "units": 0
+        },
+        {
+          "week": "2011-10-24",
+          "units": 0
+        },
+        {
+          "week": "2011-10-31",
+          "units": 4
+        },
+        {
+          "week": "2011-11-07",
+          "units": 0
+        },
+        {
+          "week": "2011-11-14",
+          "units": 0
+        },
+        {
+          "week": "2011-11-21",
+          "units": 0
+        }
+      ]
+    },
+    {
+      "sku": "15030",
+      "description": "FAN BLACK FRAME",
+      "last_observed_price": 0.29,
+      "last_sale_date": "2011-11-10",
+      "recorded_units_per_week": 4.0,
+      "active_weeks_last_8": 2,
+      "unique_transaction_prices_last_26": 1,
+      "segment": "sparse",
+      "history": [
+        {
+          "week": "2011-05-30",
+          "units": 0
+        },
+        {
+          "week": "2011-06-06",
+          "units": 0
+        },
+        {
+          "week": "2011-06-13",
+          "units": 0
+        },
+        {
+          "week": "2011-06-20",
+          "units": 0
+        },
+        {
+          "week": "2011-06-27",
+          "units": 14
+        },
+        {
+          "week": "2011-07-04",
+          "units": 20
+        },
+        {
+          "week": "2011-07-11",
+          "units": 5
+        },
+        {
+          "week": "2011-07-18",
+          "units": 60
+        },
+        {
+          "week": "2011-07-25",
+          "units": 0
+        },
+        {
+          "week": "2011-08-01",
+          "units": 0
+        },
+        {
+          "week": "2011-08-08",
+          "units": 0
+        },
+        {
+          "week": "2011-08-15",
+          "units": 2
+        },
+        {
+          "week": "2011-08-22",
+          "units": 0
+        },
+        {
+          "week": "2011-08-29",
+          "units": 0
+        },
+        {
+          "week": "2011-09-05",
+          "units": 0
+        },
+        {
+          "week": "2011-09-12",
+          "units": 0
+        },
+        {
+          "week": "2011-09-19",
+          "units": 0
+        },
+        {
+          "week": "2011-09-26",
+          "units": 3
+        },
+        {
+          "week": "2011-10-03",
+          "units": 0
+        },
+        {
+          "week": "2011-10-10",
+          "units": 0
+        },
+        {
+          "week": "2011-10-17",
+          "units": 0
+        },
+        {
+          "week": "2011-10-24",
+          "units": 10
+        },
+        {
+          "week": "2011-10-31",
+          "units": 0
+        },
+        {
+          "week": "2011-11-07",
+          "units": 22
+        },
+        {
+          "week": "2011-11-14",
+          "units": 0
+        },
+        {
+          "week": "2011-11-21",
+          "units": 0
+        }
+      ]
+    },
+    {
+      "sku": "15056p",
+      "description": "EDWARDIAN PARASOL PINK",
+      "last_observed_price": 12.46,
+      "last_sale_date": "2011-11-16",
+      "recorded_units_per_week": 0.25,
+      "active_weeks_last_8": 2,
+      "unique_transaction_prices_last_26": 1,
+      "segment": "sparse",
+      "history": [
+        {
+          "week": "2011-05-30",
+          "units": 0
+        },
+        {
+          "week": "2011-06-06",
+          "units": 1
+        },
+        {
+          "week": "2011-06-13",
+          "units": 0
+        },
+        {
+          "week": "2011-06-20",
+          "units": 2
+        },
+        {
+          "week": "2011-06-27",
+          "units": 3
+        },
+        {
+          "week": "2011-07-04",
+          "units": 2
+        },
+        {
+          "week": "2011-07-11",
+          "units": 0
+        },
+        {
+          "week": "2011-07-18",
+          "units": 0
+        },
+        {
+          "week": "2011-07-25",
+          "units": 0
+        },
+        {
+          "week": "2011-08-01",
+          "units": 0
+        },
+        {
+          "week": "2011-08-08",
+          "units": 4
+        },
+        {
+          "week": "2011-08-15",
+          "units": 1
+        },
+        {
+          "week": "2011-08-22",
+          "units": 0
+        },
+        {
+          "week": "2011-08-29",
+          "units": 0
+        },
+        {
+          "week": "2011-09-05",
+          "units": 0
+        },
+        {
+          "week": "2011-09-12",
+          "units": 0
+        },
+        {
+          "week": "2011-09-19",
+          "units": 0
+        },
+        {
+          "week": "2011-09-26",
+          "units": 1
+        },
+        {
+          "week": "2011-10-03",
+          "units": 0
+        },
+        {
+          "week": "2011-10-10",
+          "units": 0
+        },
+        {
+          "week": "2011-10-17",
+          "units": 0
+        },
+        {
+          "week": "2011-10-24",
+          "units": 1
+        },
+        {
+          "week": "2011-10-31",
+          "units": 0
+        },
+        {
+          "week": "2011-11-07",
+          "units": 0
+        },
+        {
+          "week": "2011-11-14",
+          "units": 1
+        },
+        {
+          "week": "2011-11-21",
+          "units": 0
+        }
+      ]
+    },
+    {
+      "sku": "10080",
+      "description": "GROOVY CACTUS INFLATABLE",
+      "last_observed_price": 0.39,
+      "last_sale_date": "2011-11-21",
+      "recorded_units_per_week": 12.125,
+      "active_weeks_last_8": 6,
+      "unique_transaction_prices_last_26": 1,
+      "segment": "regular",
+      "history": [
+        {
+          "week": "2011-05-30",
+          "units": 0
+        },
+        {
+          "week": "2011-06-06",
+          "units": 0
+        },
+        {
+          "week": "2011-06-13",
+          "units": 0
+        },
+        {
+          "week": "2011-06-20",
+          "units": 48
+        },
+        {
+          "week": "2011-06-27",
+          "units": 12
+        },
+        {
+          "week": "2011-07-04",
+          "units": 12
+        },
+        {
+          "week": "2011-07-11",
+          "units": 0
+        },
+        {
+          "week": "2011-07-18",
+          "units": 0
+        },
+        {
+          "week": "2011-07-25",
+          "units": 12
+        },
+        {
+          "week": "2011-08-01",
+          "units": 48
+        },
+        {
+          "week": "2011-08-08",
+          "units": 0
+        },
+        {
+          "week": "2011-08-15",
+          "units": 0
+        },
+        {
+          "week": "2011-08-22",
+          "units": 12
+        },
+        {
+          "week": "2011-08-29",
+          "units": 0
+        },
+        {
+          "week": "2011-09-05",
+          "units": 36
+        },
+        {
+          "week": "2011-09-12",
+          "units": 0
+        },
+        {
+          "week": "2011-09-19",
+          "units": 12
+        },
+        {
+          "week": "2011-09-26",
+          "units": 12
+        },
+        {
+          "week": "2011-10-03",
+          "units": 0
+        },
+        {
+          "week": "2011-10-10",
+          "units": 4
+        },
+        {
+          "week": "2011-10-17",
+          "units": 0
+        },
+        {
+          "week": "2011-10-24",
+          "units": 2
+        },
+        {
+          "week": "2011-10-31",
+          "units": 24
+        },
+        {
+          "week": "2011-11-07",
+          "units": 24
+        },
+        {
+          "week": "2011-11-14",
+          "units": 16
+        },
+        {
+          "week": "2011-11-21",
+          "units": 27
+        }
+      ]
+    },
+    {
+      "sku": "10135",
+      "description": "COLOURING PENCILS BROWN TUBE",
+      "last_observed_price": 1.25,
+      "last_sale_date": "2011-11-27",
+      "recorded_units_per_week": 27.5,
+      "active_weeks_last_8": 8,
+      "unique_transaction_prices_last_26": 4,
+      "segment": "regular",
+      "history": [
+        {
+          "week": "2011-05-30",
+          "units": 11
+        },
+        {
+          "week": "2011-06-06",
+          "units": 10
+        },
+        {
+          "week": "2011-06-13",
+          "units": 11
+        },
+        {
+          "week": "2011-06-20",
+          "units": 3
+        },
+        {
+          "week": "2011-06-27",
+          "units": 100
+        },
+        {
+          "week": "2011-07-04",
+          "units": 12
+        },
+        {
+          "week": "2011-07-11",
+          "units": 45
+        },
+        {
+          "week": "2011-07-18",
+          "units": 0
+        },
+        {
+          "week": "2011-07-25",
+          "units": 10
+        },
+        {
+          "week": "2011-08-01",
+          "units": 102
+        },
+        {
+          "week": "2011-08-08",
+          "units": 0
+        },
+        {
+          "week": "2011-08-15",
+          "units": 40
+        },
+        {
+          "week": "2011-08-22",
+          "units": 10
+        },
+        {
+          "week": "2011-08-29",
+          "units": 10
+        },
+        {
+          "week": "2011-09-05",
+          "units": 10
+        },
+        {
+          "week": "2011-09-12",
+          "units": 20
+        },
+        {
+          "week": "2011-09-19",
+          "units": 25
+        },
+        {
+          "week": "2011-09-26",
+          "units": 5
+        },
+        {
+          "week": "2011-10-03",
+          "units": 5
+        },
+        {
+          "week": "2011-10-10",
+          "units": 6
+        },
+        {
+          "week": "2011-10-17",
+          "units": 21
+        },
+        {
+          "week": "2011-10-24",
+          "units": 33
+        },
+        {
+          "week": "2011-10-31",
+          "units": 47
+        },
+        {
+          "week": "2011-11-07",
+          "units": 36
+        },
+        {
+          "week": "2011-11-14",
+          "units": 35
+        },
+        {
+          "week": "2011-11-21",
+          "units": 37
+        }
+      ]
+    },
+    {
+      "sku": "11001",
+      "description": "ASSTD DESIGN RACING CAR PEN",
+      "last_observed_price": 3.29,
+      "last_sale_date": "2011-11-25",
+      "recorded_units_per_week": 24.125,
+      "active_weeks_last_8": 8,
+      "unique_transaction_prices_last_26": 4,
+      "segment": "regular",
+      "history": [
+        {
+          "week": "2011-05-30",
+          "units": 16
+        },
+        {
+          "week": "2011-06-06",
+          "units": 0
+        },
+        {
+          "week": "2011-06-13",
+          "units": 19
+        },
+        {
+          "week": "2011-06-20",
+          "units": 48
+        },
+        {
+          "week": "2011-06-27",
+          "units": 102
+        },
+        {
+          "week": "2011-07-04",
+          "units": 111
+        },
+        {
+          "week": "2011-07-11",
+          "units": 37
+        },
+        {
+          "week": "2011-07-18",
+          "units": 40
+        },
+        {
+          "week": "2011-07-25",
+          "units": 16
+        },
+        {
+          "week": "2011-08-01",
+          "units": 385
+        },
+        {
+          "week": "2011-08-08",
+          "units": 80
+        },
+        {
+          "week": "2011-08-15",
+          "units": 2
+        },
+        {
+          "week": "2011-08-22",
+          "units": 16
+        },
+        {
+          "week": "2011-08-29",
+          "units": 16
+        },
+        {
+          "week": "2011-09-05",
+          "units": 5
+        },
+        {
+          "week": "2011-09-12",
+          "units": 7
+        },
+        {
+          "week": "2011-09-19",
+          "units": 20
+        },
+        {
+          "week": "2011-09-26",
+          "units": 16
+        },
+        {
+          "week": "2011-10-03",
+          "units": 25
+        },
+        {
+          "week": "2011-10-10",
+          "units": 52
+        },
+        {
+          "week": "2011-10-17",
+          "units": 19
+        },
+        {
+          "week": "2011-10-24",
+          "units": 1
+        },
+        {
+          "week": "2011-10-31",
+          "units": 19
+        },
+        {
+          "week": "2011-11-07",
+          "units": 34
+        },
+        {
+          "week": "2011-11-14",
+          "units": 24
+        },
+        {
+          "week": "2011-11-21",
+          "units": 19
+        }
+      ]
+    },
+    {
+      "sku": "15034",
+      "description": "PAPER POCKET TRAVELING FAN",
+      "last_observed_price": 0.14,
+      "last_sale_date": "2011-11-24",
+      "recorded_units_per_week": 131.5,
+      "active_weeks_last_8": 7,
+      "unique_transaction_prices_last_26": 3,
+      "segment": "regular",
+      "history": [
+        {
+          "week": "2011-05-30",
+          "units": 264
+        },
+        {
+          "week": "2011-06-06",
+          "units": 1272
+        },
+        {
+          "week": "2011-06-13",
+          "units": 48
+        },
+        {
+          "week": "2011-06-20",
+          "units": 36
+        },
+        {
+          "week": "2011-06-27",
+          "units": 25
+        },
+        {
+          "week": "2011-07-04",
+          "units": 3
+        },
+        {
+          "week": "2011-07-11",
+          "units": 48
+        },
+        {
+          "week": "2011-07-18",
+          "units": 121
+        },
+        {
+          "week": "2011-07-25",
+          "units": 16
+        },
+        {
+          "week": "2011-08-01",
+          "units": 19
+        },
+        {
+          "week": "2011-08-08",
+          "units": 100
+        },
+        {
+          "week": "2011-08-15",
+          "units": 24
+        },
+        {
+          "week": "2011-08-22",
+          "units": 48
+        },
+        {
+          "week": "2011-08-29",
+          "units": 50
+        },
+        {
+          "week": "2011-09-05",
+          "units": 84
+        },
+        {
+          "week": "2011-09-12",
+          "units": 21
+        },
+        {
+          "week": "2011-09-19",
+          "units": 192
+        },
+        {
+          "week": "2011-09-26",
+          "units": 1213
+        },
+        {
+          "week": "2011-10-03",
+          "units": 49
+        },
+        {
+          "week": "2011-10-10",
+          "units": 397
+        },
+        {
+          "week": "2011-10-17",
+          "units": 0
+        },
+        {
+          "week": "2011-10-24",
+          "units": 49
+        },
+        {
+          "week": "2011-10-31",
+          "units": 397
+        },
+        {
+          "week": "2011-11-07",
+          "units": 28
+        },
+        {
+          "week": "2011-11-14",
+          "units": 20
+        },
+        {
+          "week": "2011-11-21",
+          "units": 112
+        }
+      ]
+    },
+    {
+      "sku": "10002",
+      "description": "INFLATABLE POLITICAL GLOBE",
+      "last_observed_price": 0.85,
+      "last_sale_date": "2011-04-18",
+      "recorded_units_per_week": 0.0,
+      "active_weeks_last_8": 0,
+      "unique_transaction_prices_last_26": 0,
+      "segment": "no_recent_sales",
+      "history": [
+        {
+          "week": "2011-05-30",
+          "units": 0
+        },
+        {
+          "week": "2011-06-06",
+          "units": 0
+        },
+        {
+          "week": "2011-06-13",
+          "units": 0
+        },
+        {
+          "week": "2011-06-20",
+          "units": 0
+        },
+        {
+          "week": "2011-06-27",
+          "units": 0
+        },
+        {
+          "week": "2011-07-04",
+          "units": 0
+        },
+        {
+          "week": "2011-07-11",
+          "units": 0
+        },
+        {
+          "week": "2011-07-18",
+          "units": 0
+        },
+        {
+          "week": "2011-07-25",
+          "units": 0
+        },
+        {
+          "week": "2011-08-01",
+          "units": 0
+        },
+        {
+          "week": "2011-08-08",
+          "units": 0
+        },
+        {
+          "week": "2011-08-15",
+          "units": 0
+        },
+        {
+          "week": "2011-08-22",
+          "units": 0
+        },
+        {
+          "week": "2011-08-29",
+          "units": 0
+        },
+        {
+          "week": "2011-09-05",
+          "units": 0
+        },
+        {
+          "week": "2011-09-12",
+          "units": 0
+        },
+        {
+          "week": "2011-09-19",
+          "units": 0
+        },
+        {
+          "week": "2011-09-26",
+          "units": 0
+        },
+        {
+          "week": "2011-10-03",
+          "units": 0
+        },
+        {
+          "week": "2011-10-10",
+          "units": 0
+        },
+        {
+          "week": "2011-10-17",
+          "units": 0
+        },
+        {
+          "week": "2011-10-24",
+          "units": 0
+        },
+        {
+          "week": "2011-10-31",
+          "units": 0
+        },
+        {
+          "week": "2011-11-07",
+          "units": 0
+        },
+        {
+          "week": "2011-11-14",
+          "units": 0
+        },
+        {
+          "week": "2011-11-21",
+          "units": 0
+        }
+      ]
+    },
+    {
+      "sku": "10123C",
+      "description": "HEARTS WRAPPING TAPE",
+      "last_observed_price": 0.65,
+      "last_sale_date": "2011-03-31",
+      "recorded_units_per_week": 0.0,
+      "active_weeks_last_8": 0,
+      "unique_transaction_prices_last_26": 0,
+      "segment": "no_recent_sales",
+      "history": [
+        {
+          "week": "2011-05-30",
+          "units": 0
+        },
+        {
+          "week": "2011-06-06",
+          "units": 0
+        },
+        {
+          "week": "2011-06-13",
+          "units": 0
+        },
+        {
+          "week": "2011-06-20",
+          "units": 0
+        },
+        {
+          "week": "2011-06-27",
+          "units": 0
+        },
+        {
+          "week": "2011-07-04",
+          "units": 0
+        },
+        {
+          "week": "2011-07-11",
+          "units": 0
+        },
+        {
+          "week": "2011-07-18",
+          "units": 0
+        },
+        {
+          "week": "2011-07-25",
+          "units": 0
+        },
+        {
+          "week": "2011-08-01",
+          "units": 0
+        },
+        {
+          "week": "2011-08-08",
+          "units": 0
+        },
+        {
+          "week": "2011-08-15",
+          "units": 0
+        },
+        {
+          "week": "2011-08-22",
+          "units": 0
+        },
+        {
+          "week": "2011-08-29",
+          "units": 0
+        },
+        {
+          "week": "2011-09-05",
+          "units": 0
+        },
+        {
+          "week": "2011-09-12",
+          "units": 0
+        },
+        {
+          "week": "2011-09-19",
+          "units": 0
+        },
+        {
+          "week": "2011-09-26",
+          "units": 0
+        },
+        {
+          "week": "2011-10-03",
+          "units": 0
+        },
+        {
+          "week": "2011-10-10",
+          "units": 0
+        },
+        {
+          "week": "2011-10-17",
+          "units": 0
+        },
+        {
+          "week": "2011-10-24",
+          "units": 0
+        },
+        {
+          "week": "2011-10-31",
+          "units": 0
+        },
+        {
+          "week": "2011-11-07",
+          "units": 0
+        },
+        {
+          "week": "2011-11-14",
+          "units": 0
+        },
+        {
+          "week": "2011-11-21",
+          "units": 0
+        }
+      ]
+    },
+    {
+      "sku": "10120",
+      "description": "DOGGY RUBBER",
+      "last_observed_price": 0.21,
+      "last_sale_date": "2011-11-22",
+      "recorded_units_per_week": 5.625,
+      "active_weeks_last_8": 5,
+      "unique_transaction_prices_last_26": 1,
+      "segment": "occasional",
+      "history": [
+        {
+          "week": "2011-05-30",
+          "units": 0
+        },
+        {
+          "week": "2011-06-06",
+          "units": 0
+        },
+        {
+          "week": "2011-06-13",
+          "units": 0
+        },
+        {
+          "week": "2011-06-20",
+          "units": 0
+        },
+        {
+          "week": "2011-06-27",
+          "units": 0
+        },
+        {
+          "week": "2011-07-04",
+          "units": 5
+        },
+        {
+          "week": "2011-07-11",
+          "units": 0
+        },
+        {
+          "week": "2011-07-18",
+          "units": 0
+        },
+        {
+          "week": "2011-07-25",
+          "units": 0
+        },
+        {
+          "week": "2011-08-01",
+          "units": 5
+        },
+        {
+          "week": "2011-08-08",
+          "units": 0
+        },
+        {
+          "week": "2011-08-15",
+          "units": 0
+        },
+        {
+          "week": "2011-08-22",
+          "units": 30
+        },
+        {
+          "week": "2011-08-29",
+          "units": 3
+        },
+        {
+          "week": "2011-09-05",
+          "units": 0
+        },
+        {
+          "week": "2011-09-12",
+          "units": 0
+        },
+        {
+          "week": "2011-09-19",
+          "units": 1
+        },
+        {
+          "week": "2011-09-26",
+          "units": 6
+        },
+        {
+          "week": "2011-10-03",
+          "units": 5
+        },
+        {
+          "week": "2011-10-10",
+          "units": 0
+        },
+        {
+          "week": "2011-10-17",
+          "units": 5
+        },
+        {
+          "week": "2011-10-24",
+          "units": 0
+        },
+        {
+          "week": "2011-10-31",
+          "units": 28
+        },
+        {
+          "week": "2011-11-07",
+          "units": 0
+        },
+        {
+          "week": "2011-11-14",
+          "units": 6
+        },
+        {
+          "week": "2011-11-21",
+          "units": 1
+        }
+      ]
+    },
+    {
+      "sku": "10125",
+      "description": "MINI FUNKY DESIGN TAPES",
+      "last_observed_price": 0.85,
+      "last_sale_date": "2011-11-04",
+      "recorded_units_per_week": 3.25,
+      "active_weeks_last_8": 3,
+      "unique_transaction_prices_last_26": 2,
+      "segment": "occasional",
+      "history": [
+        {
+          "week": "2011-05-30",
+          "units": 1
+        },
+        {
+          "week": "2011-06-06",
+          "units": 12
+        },
+        {
+          "week": "2011-06-13",
+          "units": 0
+        },
+        {
+          "week": "2011-06-20",
+          "units": 2
+        },
+        {
+          "week": "2011-06-27",
+          "units": 4
+        },
+        {
+          "week": "2011-07-04",
+          "units": 28
+        },
+        {
+          "week": "2011-07-11",
+          "units": 25
+        },
+        {
+          "week": "2011-07-18",
+          "units": 20
+        },
+        {
+          "week": "2011-07-25",
+          "units": 0
+        },
+        {
+          "week": "2011-08-01",
+          "units": 0
+        },
+        {
+          "week": "2011-08-08",
+          "units": 40
+        },
+        {
+          "week": "2011-08-15",
+          "units": 20
+        },
+        {
+          "week": "2011-08-22",
+          "units": 5
+        },
+        {
+          "week": "2011-08-29",
+          "units": 0
+        },
+        {
+          "week": "2011-09-05",
+          "units": 20
+        },
+        {
+          "week": "2011-09-12",
+          "units": 0
+        },
+        {
+          "week": "2011-09-19",
+          "units": 0
+        },
+        {
+          "week": "2011-09-26",
+          "units": 27
+        },
+        {
+          "week": "2011-10-03",
+          "units": 4
+        },
+        {
+          "week": "2011-10-10",
+          "units": 0
+        },
+        {
+          "week": "2011-10-17",
+          "units": 0
+        },
+        {
+          "week": "2011-10-24",
+          "units": 20
+        },
+        {
+          "week": "2011-10-31",
+          "units": 2
+        },
+        {
+          "week": "2011-11-07",
+          "units": 0
+        },
+        {
+          "week": "2011-11-14",
+          "units": 0
+        },
+        {
+          "week": "2011-11-21",
+          "units": 0
+        }
+      ]
+    }
+  ]
+}
